@@ -53,6 +53,13 @@
   .nav-links{display:flex;gap:22px;font-family:var(--mono);font-size:13px;align-items:center}
   .nav-links a{color:var(--muted);transition:color .2s} .nav-links a:hover{color:var(--text)}
   .nav-links .gh{color:var(--dim)}
+  .hamburger{display:none;background:none;border:0;cursor:pointer;width:42px;height:42px;padding:10px;border-radius:9px}
+  .hamburger:hover{background:rgba(255,255,255,.05)}
+  .hamburger span{display:block;height:2px;width:100%;background:var(--text);border-radius:2px;transition:transform .25s ease,opacity .2s ease}
+  .hamburger span+span{margin-top:5px}
+  nav.open .hamburger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  nav.open .hamburger span:nth-child(2){opacity:0}
+  nav.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
   /* hero */
   .hero{padding-top:72px;padding-bottom:64px}
@@ -153,7 +160,18 @@
     section{padding:52px 0}
     .hero{padding-top:48px}
     .proof,.tools,.cmp{grid-template-columns:1fr}
-    .nav-links{gap:16px}
+    /* JS-gated hamburger: with JS the links collapse into the ☰ panel;
+       without JS the links stay visible (base .nav-links) so nav still works. */
+    .js .hamburger{display:block}
+    .js .nav-links{
+      display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;
+      background:rgba(11,15,20,.98);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--line);padding:6px 24px 14px;font-size:15px;
+      box-shadow:0 24px 40px -24px rgba(0,0,0,.8)
+    }
+    .js nav.open .nav-links{display:flex}
+    .js .nav-links a{padding:13px 2px;border-bottom:1px solid var(--line)}
+    .js .nav-links a:last-child{border-bottom:0}
   }
   @media(prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
@@ -169,12 +187,15 @@
   <nav id="nav">
     <div class="wrap">
       <div class="logo"><span class="dot"></span>ShipSealed</div>
-      <div class="nav-links">
+      <div class="nav-links" id="navlinks">
         <a href="#tools">Free tools</a>
         <a href="#paid">Products</a>
         <a href="#list">Reserve</a>
         <a class="gh" href="https://github.com/mateuszingano" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
+      <button class="hamburger" id="hb" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navlinks">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
@@ -322,6 +343,21 @@
   var nav = document.getElementById('nav');
   var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 8); };
   window.addEventListener('scroll', onScroll, { passive:true }); onScroll();
+
+  // hamburger menu (mobile)
+  var hb = document.getElementById('hb');
+  if (hb){
+    var close = function(){ nav.classList.remove('open'); hb.setAttribute('aria-expanded','false'); hb.setAttribute('aria-label','Open menu'); };
+    hb.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = nav.classList.toggle('open');
+      hb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      hb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+    document.querySelectorAll('#navlinks a').forEach(function(a){ a.addEventListener('click', close); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && nav.classList.contains('open')){ close(); hb.focus(); } });
+    document.addEventListener('click', function(e){ if(nav.classList.contains('open') && !nav.contains(e.target)){ close(); } });
+  }
 
   // (Entrance animation is pure CSS — see .js .reveal keyframes. No JS gate, so a
   //  section can never be left hidden; content is always visible even if JS fails.)
