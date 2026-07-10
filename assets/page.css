@@ -96,6 +96,18 @@ h1{font-size:clamp(30px,5vw,42px);line-height:1.1;letter-spacing:-1.2px;font-wei
 .combo-note strong{color:var(--green-2)}
 @media(max-width:720px){.addons{grid-template-columns:1fr}}
 
+/* subscription (Airlock Monitor) */
+.monitor{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:24px;
+  background:linear-gradient(180deg,rgba(62,207,142,.06),rgba(62,207,142,.01));
+  border:1px solid var(--green-dim);border-radius:var(--radius);padding:26px 28px}
+.monitor .mtxt{flex:1;min-width:230px}
+.monitor .mname{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+.monitor .mtxt p{font-size:14px;color:var(--muted);margin:0}
+.monitor .mprice{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--text);white-space:nowrap}
+.monitor .mprice small{font-size:13px;color:var(--dim);font-weight:400}
+.monitor .btn{width:auto}
+.monitor .free-hint{font-family:var(--mono);font-size:12px;color:var(--green-2);margin-top:10px}
+
 /* footer (shared, with the policy links Paddle requires) */
 footer{border-top:1px solid var(--line);margin-top:40px;padding:40px 0 56px}
 footer .wrap{max-width:960px}
