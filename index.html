@@ -11,9 +11,14 @@
 <meta property="og:url" content="https://shipsealed.com/">
 <meta property="og:title" content="ShipSealed — ship Supabase apps that don't leak">
 <meta property="og:description" content="Free Next.js + Supabase tools that make Row-Level Security the default — scaffold it, gate it in CI, and prove tenant isolation against a real database.">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://shipsealed.com/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ShipSealed — ship Supabase apps that don't leak. Row-Level Security as the default for Next.js + Supabase.">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ShipSealed — ship Supabase apps that don't leak">
 <meta name="twitter:description" content="A starter, a CLI, and a CI gate that make Row-Level Security the default for Next.js + Supabase. Free, MIT, proven by tests.">
+<meta name="twitter:image" content="https://shipsealed.com/assets/og.png">
 <style>
   :root{
     --bg:#0b0f14; --panel:#111820; --panel-2:#0e141b; --line:#1e2a36; --line-2:#263444;
@@ -80,6 +85,19 @@
   .btn-ghost{background:transparent;border:1px solid var(--line-2);color:var(--text)}
   .btn-ghost:hover{border-color:var(--dim);background:rgba(255,255,255,.02)}
   .micro{color:var(--dim);font-size:13px;margin-top:16px;font-family:var(--mono)}
+
+  /* hero + Finn mascot */
+  .hero-top{display:flex;align-items:center;gap:36px}
+  .hero-copy{flex:1;min-width:0}
+  .hero-art{flex-shrink:0;width:300px;display:flex;justify-content:center;align-items:center}
+  .hero-art img{width:100%;max-width:300px;height:auto;
+    filter:drop-shadow(0 18px 36px rgba(62,207,142,.20));animation:finn-float 4.5s ease-in-out infinite}
+  @keyframes finn-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @media(max-width:760px){
+    .hero-top{flex-direction:column;gap:8px}
+    .hero-art{width:210px;order:-1}
+  }
+  @media(prefers-reduced-motion:reduce){.hero-art img{animation:none}}
 
   /* terminal */
   .term{margin-top:44px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
@@ -203,6 +221,8 @@
 
   <!-- HERO -->
   <header class="hero">
+   <div class="hero-top">
+    <div class="hero-copy">
     <span class="pill"><span class="live"></span>for Supabase &middot; free &amp; open source</span>
     <h1>Ship Supabase apps<br>that don't <span class="hl">leak</span>.</h1>
     <p class="sub">The #1 Supabase footgun is shipping a table with Row-Level Security off. These tools make the safe path the default &mdash; scaffold it, gate it in CI, and <em>prove</em> tenant isolation with tests that run against a real database.</p>
@@ -211,6 +231,11 @@
       <button class="btn btn-ghost" onclick="document.getElementById('email').focus()">Reserve founding pricing</button>
     </div>
     <div class="micro">3 tools live on npm &amp; GitHub &middot; MIT &middot; no signup to start</div>
+    </div>
+    <div class="hero-art">
+      <img src="assets/finn.png" alt="Finn, the ShipSealed seal that seals your app's leaks" width="300">
+    </div>
+   </div>
 
     <div class="term">
       <div class="term-bar"><i></i><i></i><i></i><span class="ttl">bash</span></div>
@@ -292,9 +317,9 @@
     <div class="boiler">
       <span class="soon">◆ FLAGSHIP · BUILT &amp; PROVEN</span>
       <h2>The SaaS Boilerplate</h2>
-      <p class="lead" style="margin-bottom:4px">Multi-tenant workspaces, auth, the full RLS isolation suite, tests, and deploy — the boring-but-critical foundation, built and proven. <strong style="color:var(--text)">Pro</strong> adds Lemon Squeezy billing, an admin panel, and web push.</p>
+      <p class="lead" style="margin-bottom:4px">Multi-tenant workspaces, auth, the full RLS isolation suite, tests, and deploy — the boring-but-critical foundation, built and proven. <strong style="color:var(--text)">Pro</strong> adds billing (subscriptions + one-time), an admin panel, and web push.</p>
       <div class="feats">
-        <span>multi-tenant workspaces</span><span>member invites</span><span>billing (Lemon Squeezy)</span><span>admin panel</span>
+        <span>multi-tenant workspaces</span><span>member invites</span><span>billing integration</span><span>admin panel</span>
         <span>web push</span><span>RLS isolation suite</span><span>e2e + CI + deploy</span>
       </div>
     </div>
