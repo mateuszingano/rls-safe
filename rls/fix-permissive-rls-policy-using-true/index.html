@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://shipsealed.com/rls/fix-permissive-rls-policy-using-true/">
+<title>USING (true) is a security hole — how to fix a permissive RLS policy</title>
+<meta name="description" content="A Supabase RLS policy with USING (true) makes the table public read. Here&#x27;s how to find every permissive policy in your database and replace it with one scoped to the signed-in user.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233ecf8e'/><path d='M9 16.5l4.5 4.5L23 10' stroke='%23041b0f' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://shipsealed.com/rls/fix-permissive-rls-policy-using-true/">
+<meta property="og:title" content="USING (true) is a security hole — how to fix a permissive RLS policy">
+<meta property="og:description" content="A Supabase RLS policy with USING (true) makes the table public read. Here&#x27;s how to find every permissive policy in your database and replace it with one scoped to the signed-in user.">
+<meta property="og:image" content="https://shipsealed.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="USING (true) is a security hole — how to fix a permissive RLS policy">
+<meta name="twitter:description" content="A Supabase RLS policy with USING (true) makes the table public read. Here&#x27;s how to find every permissive policy in your database and replace it with one scoped to the signed-in user.">
+<meta name="twitter:image" content="https://shipsealed.com/assets/og.png">
+<link rel="stylesheet" href="/assets/guides.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "USING (true) is a security hole — how to fix a permissive RLS policy", "description": "A Supabase RLS policy with USING (true) makes the table public read. Here's how to find every permissive policy in your database and replace it with one scoped to the signed-in user.", "url": "https://shipsealed.com/rls/fix-permissive-rls-policy-using-true/", "mainEntityOfPage": "https://shipsealed.com/rls/fix-permissive-rls-policy-using-true/", "inLanguage": "en", "author": {"@type": "Organization", "name": "ShipSealed"}, "publisher": {"@type": "Organization", "name": "ShipSealed"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://shipsealed.com/"}, {"@type": "ListItem", "position": 2, "name": "RLS guides", "item": "https://shipsealed.com/rls/"}, {"@type": "ListItem", "position": 3, "name": "USING (true) is a security hole — how to fix a permissive RLS policy", "item": "https://shipsealed.com/rls/fix-permissive-rls-policy-using-true/"}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How is USING (true) different from RLS being off?", "acceptedAnswer": {"@type": "Answer", "text": "Both make the table publicly readable. RLS off means the engine doesn't check policies at all; USING (true) means RLS is on but the policy allows everyone. The audit is different — one shows up in pg_class.relrowsecurity, the other in pg_policies.qual — but the leak is the same."}}, {"@type": "Question", "name": "Can I keep USING (true) for an internal table?", "acceptedAnswer": {"@type": "Answer", "text": "No — 'internal' tables are still reachable through the anon key. If a table is exposed to Supabase's API at all, USING (true) makes it public. Scope it to the caller, or don't expose it."}}]}]}</script>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/"><span class="dot"></span>ShipSealed</a>
+    <div class="nav-links">
+      <a href="/#tools">Free tools</a>
+      <a href="/rls/">RLS guides</a>
+      <a href="/cheatsheet/">Cheat sheet</a>
+      <a class="gh" href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+<main class="wrap">
+  <p class="crumb"><a href="/">Home</a> / <a href="/rls/">RLS</a> / Fix a permissive USING (true) policy</p>
+  <p class="eyebrow">Supabase RLS · Fix</p>
+  <h1><span class="mono">USING (true)</span> is a security hole — how to fix it</h1>
+  <div class="byline"><span>Postgres 15 · Supabase</span><span class="ok">✓ code tested against a real database</span></div>
+  <div class="tldr"><div class="lbl">TL;DR</div><p><code>USING (true)</code> means 'everyone, always' — it quietly makes the table public read. Find them with a query on <code>pg_policies</code> and replace each with a policy scoped to <code>(select auth.uid())</code> or workspace membership.</p></div>
+  <h2><span class="n">01</span> Why <span class="mono">USING (true)</span> leaks</h2>
+  <p>An RLS policy's <code>USING</code> clause is the filter for which rows a caller may see. <code>USING (true)</code> evaluates true for every row and every caller — so anyone with your <code>anon</code> key can read the whole table. It's the second most common Supabase leak, right after RLS being off, and it usually gets copy-pasted in from a tutorial that just wanted the demo to work.</p>
+
+  <h2><span class="n">02</span> Find every permissive policy</h2>
+  <p class="filelabel">audit.sql</p>
+  <pre><span class="k">select</span> schemaname, tablename, policyname, cmd, qual
+<span class="k">from</span> pg_policies
+<span class="k">where</span> schemaname = <span class="s">'public'</span>
+  <span class="k">and</span> qual = <span class="s">'true'</span>;      <span class="c">-- USING (true)</span></pre>
+  <p>Also check <code>with_check = 'true'</code> for permissive writes. Anything that comes back is a table any user can read (or write).</p>
+
+  <h2><span class="n">03</span> Replace it with a scoped policy</h2>
+  <p class="filelabel">migration.sql</p>
+  <pre><span class="k">drop policy</span> <span class="s">"public read"</span> <span class="k">on</span> notes;
+
+<span class="k">create policy</span> <span class="s">"owner reads own notes"</span> <span class="k">on</span> notes <span class="k">for select</span>
+  <span class="k">using</span> (user_id = (<span class="k">select</span> auth.uid()));</pre>
+
+  <h2><span class="n">04</span> If you actually want public read</h2>
+  <p>Sometimes public read is the point (a blog, a public profile). Do it <b>on purpose</b> and scope the columns — don't expose the whole row. Restrict to a published flag and select only safe columns:</p>
+  <p class="filelabel">migration.sql</p>
+  <pre><span class="k">create policy</span> <span class="s">"anyone reads published posts"</span> <span class="k">on</span> posts <span class="k">for select</span>
+  <span class="k">using</span> (is_published = true);</pre>
+  <p>That still isn't <code>USING (true)</code> — it's a deliberate rule. Keep private columns out of any table that has a public policy.</p>
+<div class="related"><div class="lbl">Related RLS guides</div><a href="/rls/supabase-table-public-rls-off/">Why is my Supabase table public? (RLS is off) <span class="arw">→</span></a><a href="/rls/write-owner-scoped-rls-policy-supabase/">Owner-scoped RLS policy <span class="arw">→</span></a><a href="/rls/rls-in-ci-fail-build-exposed-table/">Catch permissive policies in CI <span class="arw">→</span></a></div>
+  <div class="cta">
+    <span class="soon">◆ FREE · MIT · npm + GitHub Action</span>
+    <h2>Catch this before it ships</h2>
+    <p><code>airlock-rls</code> is a CI gate that fails your build when a table ships exposed or a policy is permissive — the same class of bug, caught on the pull request instead of in prod.</p>
+    <div class="cmd"><span>npx airlock-rls</span><span class="arw">→</span></div>
+    <p style="margin-top:18px">Or start from <a href="https://github.com/mateuszingano/nextjs-supabase-starter"><code>nextjs-supabase-starter</code></a> — auth + a table with RLS + an isolation test, so a fresh table is safe by default.</p>
+  </div>
+  <div class="cta plain">
+    <span class="soon">FREE PDF</span>
+    <h2 style="font-size:20px">Grab the Supabase RLS cheat sheet</h2>
+    <p>The golden rules, the footguns that leak in prod, correct policy snippets, and the isolation test — on one page.</p>
+    <form onsubmit="return joinList(event)">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <input type="email" id="email" placeholder="you@yourstartup.dev" required aria-label="Email">
+      <button type="submit" class="btn">Email me the cheat sheet →</button>
+    </form>
+    <div class="msg mono" id="msg" style="margin-top:12px;font-size:13.5px;min-height:18px"></div>
+  </div>
+  <h2><span class="n">FAQ</span></h2>
+  <details><summary>How is USING (true) different from RLS being off?</summary><p>Both make the table publicly readable. RLS off means the engine doesn't check policies at all; USING (true) means RLS is on but the policy allows everyone. The audit is different — one shows up in pg_class.relrowsecurity, the other in pg_policies.qual — but the leak is the same.</p></details><details><summary>Can I keep USING (true) for an internal table?</summary><p>No — 'internal' tables are still reachable through the anon key. If a table is exposed to Supabase's API at all, USING (true) makes it public. Scope it to the caller, or don't expose it.</p></details>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="/#tools">Free tools</a><a href="/rls/">RLS guides</a><a href="/cheatsheet/">Cheat sheet</a>
+      <a href="/pricing/">Pricing</a><a href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+    <div class="legal">ShipSealed — ship Supabase apps that don't leak 🦭 · Not affiliated with Supabase. Code samples are provided as-is; test against your own database.</div>
+  </div>
+</footer>
+<script>
+  var SUPABASE_URL='https://ukaelmxvgggvudlwwexk.supabase.co';
+  var SUPABASE_KEY='sb_publishable_ZfgF6NCfzH0T32Gjx5l-bw_DwleKw2S';
+  async function joinList(e){e.preventDefault();
+    var email=document.getElementById('email').value.trim();var msg=document.getElementById('msg');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='var(--red)';msg.textContent='✖ enter a valid email';return false;}
+    msg.style.color='var(--dim)';msg.textContent='joining…';var ok=false;
+    try{var r=await fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r.ok;}catch(x){}
+    if(!ok){try{var r2=await fetch(SUPABASE_URL+'/rest/v1/waitlist',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r2.ok||r2.status===409;}catch(x){}}
+    msg.style.color=ok?'var(--green)':'var(--red)';
+    msg.innerHTML=ok?'✔ on its way — check your inbox. <a href="/assets/supabase-rls-cheatsheet.pdf" style="text-decoration:underline">grab it now →</a>':'✖ something went wrong — try again.';
+    return false;}
+</script>
+</body>
+</html>

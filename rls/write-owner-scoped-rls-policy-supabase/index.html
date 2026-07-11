@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://shipsealed.com/rls/write-owner-scoped-rls-policy-supabase/">
+<title>How to write an owner-scoped RLS policy (SELECT / INSERT / UPDATE / DELETE)</title>
+<meta name="description" content="The complete owner-scoped Supabase RLS policy set for SELECT, INSERT, UPDATE and DELETE — with the right USING and WITH CHECK on each, and why UPDATE needs both.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233ecf8e'/><path d='M9 16.5l4.5 4.5L23 10' stroke='%23041b0f' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://shipsealed.com/rls/write-owner-scoped-rls-policy-supabase/">
+<meta property="og:title" content="How to write an owner-scoped RLS policy (SELECT / INSERT / UPDATE / DELETE)">
+<meta property="og:description" content="The complete owner-scoped Supabase RLS policy set for SELECT, INSERT, UPDATE and DELETE — with the right USING and WITH CHECK on each, and why UPDATE needs both.">
+<meta property="og:image" content="https://shipsealed.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to write an owner-scoped RLS policy (SELECT / INSERT / UPDATE / DELETE)">
+<meta name="twitter:description" content="The complete owner-scoped Supabase RLS policy set for SELECT, INSERT, UPDATE and DELETE — with the right USING and WITH CHECK on each, and why UPDATE needs both.">
+<meta name="twitter:image" content="https://shipsealed.com/assets/og.png">
+<link rel="stylesheet" href="/assets/guides.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "How to write an owner-scoped RLS policy (SELECT / INSERT / UPDATE / DELETE)", "description": "The complete owner-scoped Supabase RLS policy set for SELECT, INSERT, UPDATE and DELETE — with the right USING and WITH CHECK on each, and why UPDATE needs both.", "url": "https://shipsealed.com/rls/write-owner-scoped-rls-policy-supabase/", "mainEntityOfPage": "https://shipsealed.com/rls/write-owner-scoped-rls-policy-supabase/", "inLanguage": "en", "author": {"@type": "Organization", "name": "ShipSealed"}, "publisher": {"@type": "Organization", "name": "ShipSealed"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://shipsealed.com/"}, {"@type": "ListItem", "position": 2, "name": "RLS guides", "item": "https://shipsealed.com/rls/"}, {"@type": "ListItem", "position": 3, "name": "How to write an owner-scoped RLS policy (SELECT / INSERT / UPDATE / DELETE)", "item": "https://shipsealed.com/rls/write-owner-scoped-rls-policy-supabase/"}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I use one policy for all operations?", "acceptedAnswer": {"@type": "Answer", "text": "You can write a policy FOR ALL, but you lose the USING/WITH CHECK distinction that matters for writes. A policy per operation is clearer and safer — especially so UPDATE gets both clauses."}}, {"@type": "Question", "name": "Where does user_id come from on insert?", "acceptedAnswer": {"@type": "Answer", "text": "Set a column default of (select auth.uid()) so the database fills it, or set it explicitly from the signed-in user on the client. Either way the WITH CHECK guarantees it matches the caller."}}]}]}</script>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/"><span class="dot"></span>ShipSealed</a>
+    <div class="nav-links">
+      <a href="/#tools">Free tools</a>
+      <a href="/rls/">RLS guides</a>
+      <a href="/cheatsheet/">Cheat sheet</a>
+      <a class="gh" href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+<main class="wrap">
+  <p class="crumb"><a href="/">Home</a> / <a href="/rls/">RLS</a> / Owner-scoped RLS policy</p>
+  <p class="eyebrow">Supabase RLS · Policy pattern</p>
+  <h1>How to write an owner-scoped RLS policy</h1>
+  <div class="byline"><span>Postgres 15 · Supabase</span><span class="ok">✓ code tested against a real database</span></div>
+  <div class="tldr"><div class="lbl">TL;DR</div><p>Store <code>user_id</code> on the table and compare it to <code>(select auth.uid())</code> in one policy per operation: <code>USING</code> for SELECT/DELETE, <code>WITH CHECK</code> for INSERT, and <b>both</b> for UPDATE. Full set below.</p></div>
+  <h2><span class="n">01</span> The rule</h2>
+  <p>Owner-scoped means: a row belongs to one user, and only that user can touch it. Store the owner as <code>user_id</code> and compare it to <code>(select auth.uid())</code> — the id of the signed-in caller — in every policy. Wrapping it in a subselect lets Postgres cache the value per statement, a real speed win at scale.</p>
+
+  <h2><span class="n">02</span> The full policy set</h2>
+  <p>One policy per operation. Note where each uses <code>USING</code> vs <code>WITH CHECK</code>:</p>
+  <p class="filelabel">migration.sql</p>
+  <pre><span class="k">alter table</span> notes <span class="k">enable row level security</span>;
+
+<span class="c">-- read: filter to rows you own</span>
+<span class="k">create policy</span> <span class="s">"select own"</span> <span class="k">on</span> notes <span class="k">for select</span>
+  <span class="k">using</span> (user_id = (<span class="k">select</span> auth.uid()));
+
+<span class="c">-- create: the new row must belong to you</span>
+<span class="k">create policy</span> <span class="s">"insert own"</span> <span class="k">on</span> notes <span class="k">for insert</span>
+  <span class="k">with check</span> (user_id = (<span class="k">select</span> auth.uid()));
+
+<span class="c">-- update: you can only touch your rows (USING) and can't reassign them (WITH CHECK)</span>
+<span class="k">create policy</span> <span class="s">"update own"</span> <span class="k">on</span> notes <span class="k">for update</span>
+  <span class="k">using</span> (user_id = (<span class="k">select</span> auth.uid()))
+  <span class="k">with check</span> (user_id = (<span class="k">select</span> auth.uid()));
+
+<span class="c">-- delete: you can only delete your rows</span>
+<span class="k">create policy</span> <span class="s">"delete own"</span> <span class="k">on</span> notes <span class="k">for delete</span>
+  <span class="k">using</span> (user_id = (<span class="k">select</span> auth.uid()));</pre>
+
+  <h2><span class="n">02b</span> Why UPDATE needs both</h2>
+  <p><code>USING</code> decides which rows you may update; <code>WITH CHECK</code> validates the row <em>after</em> your change. Without <code>WITH CHECK</code>, a user could update their own row and set <code>user_id</code> to someone else's — handing it away. Both clauses close that.</p>
+
+  <h2><span class="n">03</span> Prove it</h2>
+  <div class="prove">
+    <div class="row"><span class="ok">✓</span> owner reads / updates / deletes their own rows</div>
+    <div class="row"><span class="bad">✗</span> owner sees <b>0 rows</b> for another user</div>
+    <div class="row"><span class="bad">✗</span> owner cannot reassign a row to another <code>user_id</code></div>
+  </div>
+  <p>See <a href="/rls/test-tenant-isolation-supabase/">how to test tenant isolation</a> to turn that into an automated check.</p>
+<div class="related"><div class="lbl">Related RLS guides</div><a href="/rls/test-tenant-isolation-supabase/">Test tenant isolation in Supabase <span class="arw">→</span></a><a href="/rls/multi-tenant-rls-workspaces-supabase/">Multi-tenant RLS with workspaces <span class="arw">→</span></a><a href="/rls/fix-new-row-violates-row-level-security-policy/">Fix: new row violates row-level security policy <span class="arw">→</span></a></div>
+  <div class="cta">
+    <span class="soon">◆ FREE · MIT · npm + GitHub Action</span>
+    <h2>Catch this before it ships</h2>
+    <p><code>airlock-rls</code> is a CI gate that fails your build when a table ships exposed or a policy is permissive — the same class of bug, caught on the pull request instead of in prod.</p>
+    <div class="cmd"><span>npx airlock-rls</span><span class="arw">→</span></div>
+    <p style="margin-top:18px">Or start from <a href="https://github.com/mateuszingano/nextjs-supabase-starter"><code>nextjs-supabase-starter</code></a> — auth + a table with RLS + an isolation test, so a fresh table is safe by default.</p>
+  </div>
+  <div class="cta plain">
+    <span class="soon">FREE PDF</span>
+    <h2 style="font-size:20px">Grab the Supabase RLS cheat sheet</h2>
+    <p>The golden rules, the footguns that leak in prod, correct policy snippets, and the isolation test — on one page.</p>
+    <form onsubmit="return joinList(event)">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <input type="email" id="email" placeholder="you@yourstartup.dev" required aria-label="Email">
+      <button type="submit" class="btn">Email me the cheat sheet →</button>
+    </form>
+    <div class="msg mono" id="msg" style="margin-top:12px;font-size:13.5px;min-height:18px"></div>
+  </div>
+  <h2><span class="n">FAQ</span></h2>
+  <details><summary>Can I use one policy for all operations?</summary><p>You can write a policy FOR ALL, but you lose the USING/WITH CHECK distinction that matters for writes. A policy per operation is clearer and safer — especially so UPDATE gets both clauses.</p></details><details><summary>Where does user_id come from on insert?</summary><p>Set a column default of (select auth.uid()) so the database fills it, or set it explicitly from the signed-in user on the client. Either way the WITH CHECK guarantees it matches the caller.</p></details>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="/#tools">Free tools</a><a href="/rls/">RLS guides</a><a href="/cheatsheet/">Cheat sheet</a>
+      <a href="/pricing/">Pricing</a><a href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+    <div class="legal">ShipSealed — ship Supabase apps that don't leak 🦭 · Not affiliated with Supabase. Code samples are provided as-is; test against your own database.</div>
+  </div>
+</footer>
+<script>
+  var SUPABASE_URL='https://ukaelmxvgggvudlwwexk.supabase.co';
+  var SUPABASE_KEY='sb_publishable_ZfgF6NCfzH0T32Gjx5l-bw_DwleKw2S';
+  async function joinList(e){e.preventDefault();
+    var email=document.getElementById('email').value.trim();var msg=document.getElementById('msg');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='var(--red)';msg.textContent='✖ enter a valid email';return false;}
+    msg.style.color='var(--dim)';msg.textContent='joining…';var ok=false;
+    try{var r=await fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r.ok;}catch(x){}
+    if(!ok){try{var r2=await fetch(SUPABASE_URL+'/rest/v1/waitlist',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r2.ok||r2.status===409;}catch(x){}}
+    msg.style.color=ok?'var(--green)':'var(--red)';
+    msg.innerHTML=ok?'✔ on its way — check your inbox. <a href="/assets/supabase-rls-cheatsheet.pdf" style="text-decoration:underline">grab it now →</a>':'✖ something went wrong — try again.';
+    return false;}
+</script>
+</body>
+</html>

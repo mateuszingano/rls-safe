@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://shipsealed.com/rls/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/enable-row-level-security-supabase-table/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/fix-new-row-violates-row-level-security-policy/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/fix-permissive-rls-policy-using-true/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/multi-tenant-rls-workspaces-supabase/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/nextjs-app-router-supabase-auth-rls-ssr/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/owner-id-vs-workspace-id-rls-pattern/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/rls-in-ci-fail-build-exposed-table/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/rls-vs-app-layer-authorization/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/supabase-security-checklist-before-launch/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/supabase-table-public-rls-off/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/test-tenant-isolation-supabase/</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://shipsealed.com/rls/write-owner-scoped-rls-policy-supabase/</loc><changefreq>monthly</changefreq></url>
+</urlset>

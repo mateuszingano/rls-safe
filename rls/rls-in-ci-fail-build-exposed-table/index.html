@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://shipsealed.com/rls/rls-in-ci-fail-build-exposed-table/">
+<title>RLS in CI: fail the build when a table ships exposed</title>
+<meta name="description" content="Turn RLS from a thing you remember into a thing your pipeline enforces: a CI gate that fails the build when a Supabase table ships with RLS off or a permissive policy.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233ecf8e'/><path d='M9 16.5l4.5 4.5L23 10' stroke='%23041b0f' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://shipsealed.com/rls/rls-in-ci-fail-build-exposed-table/">
+<meta property="og:title" content="RLS in CI: fail the build when a table ships exposed">
+<meta property="og:description" content="Turn RLS from a thing you remember into a thing your pipeline enforces: a CI gate that fails the build when a Supabase table ships with RLS off or a permissive policy.">
+<meta property="og:image" content="https://shipsealed.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RLS in CI: fail the build when a table ships exposed">
+<meta name="twitter:description" content="Turn RLS from a thing you remember into a thing your pipeline enforces: a CI gate that fails the build when a Supabase table ships with RLS off or a permissive policy.">
+<meta name="twitter:image" content="https://shipsealed.com/assets/og.png">
+<link rel="stylesheet" href="/assets/guides.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "RLS in CI: fail the build when a table ships exposed", "description": "Turn RLS from a thing you remember into a thing your pipeline enforces: a CI gate that fails the build when a Supabase table ships with RLS off or a permissive policy.", "url": "https://shipsealed.com/rls/rls-in-ci-fail-build-exposed-table/", "mainEntityOfPage": "https://shipsealed.com/rls/rls-in-ci-fail-build-exposed-table/", "inLanguage": "en", "author": {"@type": "Organization", "name": "ShipSealed"}, "publisher": {"@type": "Organization", "name": "ShipSealed"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://shipsealed.com/"}, {"@type": "ListItem", "position": 2, "name": "RLS guides", "item": "https://shipsealed.com/rls/"}, {"@type": "ListItem", "position": 3, "name": "RLS in CI: fail the build when a table ships exposed", "item": "https://shipsealed.com/rls/rls-in-ci-fail-build-exposed-table/"}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does the gate need production credentials?", "acceptedAnswer": {"@type": "Answer", "text": "No — point it at your migration/CI database (a branch database or a local supabase start), the same schema that will ship. It checks structure (RLS flags and policies), not production data."}}, {"@type": "Question", "name": "Is the SQL check enough on its own?", "acceptedAnswer": {"@type": "Answer", "text": "It catches the coarse failures — RLS off and permissive policies. It can't tell whether a scoped policy is actually correct; only a behavioral isolation test does that. Run both: the gate for structure, the test for behavior."}}]}]}</script>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/"><span class="dot"></span>ShipSealed</a>
+    <div class="nav-links">
+      <a href="/#tools">Free tools</a>
+      <a href="/rls/">RLS guides</a>
+      <a href="/cheatsheet/">Cheat sheet</a>
+      <a class="gh" href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+<main class="wrap">
+  <p class="crumb"><a href="/">Home</a> / <a href="/rls/">RLS</a> / RLS in CI: fail the build</p>
+  <p class="eyebrow">Supabase RLS · CI</p>
+  <h1>RLS in CI: fail the build when a table ships exposed</h1>
+  <div class="byline"><span>GitHub Actions · Postgres</span><span class="ok">✓ code tested against a real database</span></div>
+  <div class="tldr"><div class="lbl">TL;DR</div><p>Add a CI step that scans for tables with RLS off or <code>USING (true)</code> and exits non-zero. The fastest way is <code>npx airlock-rls</code> as a GitHub Action; a raw SQL check is below if you'd rather roll your own.</p></div>
+  <h2><span class="n">01</span> Why a gate, not a checklist</h2>
+  <p>Every RLS leak in production started as a table someone forgot to protect. A human checklist misses it eventually; a build that goes red does not. The goal: a new table with RLS off, or a policy with <code>USING (true)</code>, <b>fails the pull request</b> before it can merge.</p>
+
+  <h2><span class="n">02</span> The gate (airlock-rls)</h2>
+  <p><code>airlock-rls</code> is a free CI gate that does exactly this — it checks your project for exposed tables and permissive policies and exits non-zero when it finds one.</p>
+  <p class="filelabel">.github/workflows/rls.yml</p>
+  <pre>jobs:
+  rls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - <span class="k">name</span>: Gate RLS
+        <span class="k">run</span>: npx airlock-rls
+        <span class="c"># exits 1 if any table ships with RLS off or a permissive policy</span>
+        <span class="k">env</span>:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}</pre>
+
+  <h2><span class="n">03</span> Or the raw SQL check</h2>
+  <p>Prefer to own it? Run this against your migration database and fail if it returns any rows:</p>
+  <p class="filelabel">ci-check.sql</p>
+  <pre><span class="c">-- any public table with RLS off = fail</span>
+<span class="k">select</span> t.tablename
+<span class="k">from</span> pg_tables t
+<span class="k">join</span> pg_class c <span class="k">on</span> c.relname = t.tablename
+<span class="k">where</span> t.schemaname = <span class="s">'public'</span> <span class="k">and</span> c.relrowsecurity = false
+<span class="k">union all</span>
+<span class="c">-- any permissive policy = fail</span>
+<span class="k">select</span> tablename <span class="k">from</span> pg_policies
+<span class="k">where</span> schemaname = <span class="s">'public'</span> <span class="k">and</span> (qual = <span class="s">'true'</span> <span class="k">or</span> with_check = <span class="s">'true'</span>);</pre>
+  <p>Wrap it so a non-empty result exits <code>1</code>. This catches the coarse failures (RLS off, permissive) — pair it with an <a href="/rls/test-tenant-isolation-supabase/">isolation test</a> for the behavioral proof that policies actually isolate tenants.</p>
+<div class="related"><div class="lbl">Related RLS guides</div><a href="/rls/test-tenant-isolation-supabase/">Test tenant isolation in Supabase <span class="arw">→</span></a><a href="/rls/supabase-table-public-rls-off/">Why is my Supabase table public? (RLS off) <span class="arw">→</span></a><a href="/rls/supabase-security-checklist-before-launch/">Supabase security checklist before launch <span class="arw">→</span></a></div>
+  <div class="cta">
+    <span class="soon">◆ FREE · MIT · npm + GitHub Action</span>
+    <h2>Catch this before it ships</h2>
+    <p><code>airlock-rls</code> is a CI gate that fails your build when a table ships exposed or a policy is permissive — the same class of bug, caught on the pull request instead of in prod.</p>
+    <div class="cmd"><span>npx airlock-rls</span><span class="arw">→</span></div>
+    <p style="margin-top:18px">Or start from <a href="https://github.com/mateuszingano/nextjs-supabase-starter"><code>nextjs-supabase-starter</code></a> — auth + a table with RLS + an isolation test, so a fresh table is safe by default.</p>
+  </div>
+  <div class="cta plain">
+    <span class="soon">FREE PDF</span>
+    <h2 style="font-size:20px">Grab the Supabase RLS cheat sheet</h2>
+    <p>The golden rules, the footguns that leak in prod, correct policy snippets, and the isolation test — on one page.</p>
+    <form onsubmit="return joinList(event)">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <input type="email" id="email" placeholder="you@yourstartup.dev" required aria-label="Email">
+      <button type="submit" class="btn">Email me the cheat sheet →</button>
+    </form>
+    <div class="msg mono" id="msg" style="margin-top:12px;font-size:13.5px;min-height:18px"></div>
+  </div>
+  <h2><span class="n">FAQ</span></h2>
+  <details><summary>Does the gate need production credentials?</summary><p>No — point it at your migration/CI database (a branch database or a local supabase start), the same schema that will ship. It checks structure (RLS flags and policies), not production data.</p></details><details><summary>Is the SQL check enough on its own?</summary><p>It catches the coarse failures — RLS off and permissive policies. It can't tell whether a scoped policy is actually correct; only a behavioral isolation test does that. Run both: the gate for structure, the test for behavior.</p></details>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="/#tools">Free tools</a><a href="/rls/">RLS guides</a><a href="/cheatsheet/">Cheat sheet</a>
+      <a href="/pricing/">Pricing</a><a href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+    <div class="legal">ShipSealed — ship Supabase apps that don't leak 🦭 · Not affiliated with Supabase. Code samples are provided as-is; test against your own database.</div>
+  </div>
+</footer>
+<script>
+  var SUPABASE_URL='https://ukaelmxvgggvudlwwexk.supabase.co';
+  var SUPABASE_KEY='sb_publishable_ZfgF6NCfzH0T32Gjx5l-bw_DwleKw2S';
+  async function joinList(e){e.preventDefault();
+    var email=document.getElementById('email').value.trim();var msg=document.getElementById('msg');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='var(--red)';msg.textContent='✖ enter a valid email';return false;}
+    msg.style.color='var(--dim)';msg.textContent='joining…';var ok=false;
+    try{var r=await fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r.ok;}catch(x){}
+    if(!ok){try{var r2=await fetch(SUPABASE_URL+'/rest/v1/waitlist',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r2.ok||r2.status===409;}catch(x){}}
+    msg.style.color=ok?'var(--green)':'var(--red)';
+    msg.innerHTML=ok?'✔ on its way — check your inbox. <a href="/assets/supabase-rls-cheatsheet.pdf" style="text-decoration:underline">grab it now →</a>':'✖ something went wrong — try again.';
+    return false;}
+</script>
+</body>
+</html>

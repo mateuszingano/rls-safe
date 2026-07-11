@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://shipsealed.com/rls/fix-new-row-violates-row-level-security-policy/">
+<title>Fix: &quot;new row violates row-level security policy&quot; (Supabase)</title>
+<meta name="description" content="Why Supabase throws new row violates row-level security policy on INSERT, the three real causes, and the correct fix — with a WITH CHECK policy and a test that proves it.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233ecf8e'/><path d='M9 16.5l4.5 4.5L23 10' stroke='%23041b0f' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://shipsealed.com/rls/fix-new-row-violates-row-level-security-policy/">
+<meta property="og:title" content="Fix: &quot;new row violates row-level security policy&quot; (Supabase)">
+<meta property="og:description" content="Why Supabase throws new row violates row-level security policy on INSERT, the three real causes, and the correct fix — with a WITH CHECK policy and a test that proves it.">
+<meta property="og:image" content="https://shipsealed.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fix: &quot;new row violates row-level security policy&quot; (Supabase)">
+<meta name="twitter:description" content="Why Supabase throws new row violates row-level security policy on INSERT, the three real causes, and the correct fix — with a WITH CHECK policy and a test that proves it.">
+<meta name="twitter:image" content="https://shipsealed.com/assets/og.png">
+<link rel="stylesheet" href="/assets/guides.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Fix: new row violates row-level security policy", "description": "Why Supabase throws new row violates row-level security policy on INSERT, the three real causes, and the correct fix — with a WITH CHECK policy and a test that proves it.", "url": "https://shipsealed.com/rls/fix-new-row-violates-row-level-security-policy/", "mainEntityOfPage": "https://shipsealed.com/rls/fix-new-row-violates-row-level-security-policy/", "inLanguage": "en", "author": {"@type": "Organization", "name": "ShipSealed"}, "publisher": {"@type": "Organization", "name": "ShipSealed"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://shipsealed.com/"}, {"@type": "ListItem", "position": 2, "name": "RLS guides", "item": "https://shipsealed.com/rls/"}, {"@type": "ListItem", "position": 3, "name": "Fix: new row violates row-level security policy", "item": "https://shipsealed.com/rls/fix-new-row-violates-row-level-security-policy/"}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does this error mean my table is exposed?", "acceptedAnswer": {"@type": "Answer", "text": "No — the opposite. RLS is on and doing its job (deny by default). The risk is when RLS is off: then there's no error and the table is public. This error means the guardrail is working; you just need a policy that permits the legitimate write."}}, {"@type": "Question", "name": "Why does the insert work in the SQL editor but fail from my app?", "acceptedAnswer": {"@type": "Answer", "text": "The SQL editor runs as a privileged role that bypasses RLS. Your app runs as authenticated or anon, which RLS applies to. Always test writes the way your app makes them — signed in, through the client."}}, {"@type": "Question", "name": "Can I just disable RLS to make it go away?", "acceptedAnswer": {"@type": "Answer", "text": "You can, and you'll have made the table public to anyone with your anon key — the #1 Supabase leak. Keep RLS on and add the correct policy instead."}}]}]}</script>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/"><span class="dot"></span>ShipSealed</a>
+    <div class="nav-links">
+      <a href="/#tools">Free tools</a>
+      <a href="/rls/">RLS guides</a>
+      <a href="/cheatsheet/">Cheat sheet</a>
+      <a class="gh" href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+<main class="wrap">
+  <p class="crumb"><a href="/">Home</a> / <a href="/rls/">RLS</a> / Fix: new row violates row-level security policy</p>
+  <p class="eyebrow">Supabase RLS · Error fix</p>
+  <h1>Fix: <span class="mono">new row violates row-level security policy</span></h1>
+  <div class="byline"><span>Postgres 15 · Supabase</span><span class="ok">✓ code tested against a real database</span></div>
+  <div class="tldr"><div class="lbl">TL;DR</div><p>Your <code>INSERT</code> is blocked because the new row fails the table's <code>WITH CHECK</code> — usually because there's <b>no INSERT policy</b>, or the row's <code>user_id</code> doesn't equal <code>auth.uid()</code>. Add an INSERT policy with <code>with check (user_id = (select auth.uid()))</code> and make sure the row carries the signed-in user's id.</p></div>
+  <h2><span class="n">01</span> Why you're seeing this</h2>
+  <p>Postgres throws <code>new row violates row-level security policy for table "…"</code> when Row-Level Security is <b>on</b> and the row you're writing isn't allowed by any policy's <code>WITH CHECK</code> expression. RLS on with no matching policy means <b>deny</b> — the safe default doing its job, not a bug. It fires on <code>INSERT</code> and on <code>UPDATE</code> (when the updated row would move outside what you're allowed to write).</p>
+  <div class="cause"><span class="tag">CAUSE 1 · most common</span><h3>There's no INSERT policy at all</h3><p>You enabled RLS and added a <code>SELECT</code> policy, but never one for <code>INSERT</code>. Reads work, writes are denied — RLS is default-deny per operation.</p></div>
+  <div class="cause"><span class="tag">CAUSE 2</span><h3>The row's <span class="mono">user_id</span> doesn't match <span class="mono">auth.uid()</span></h3><p>You have <code>with check (user_id = auth.uid())</code>, but the client inserted the row <b>without</b> setting <code>user_id</code> (so it's <code>null</code>), or set a different id. The check evaluates false → violation.</p></div>
+  <div class="cause"><span class="tag">CAUSE 3</span><h3>The request isn't authenticated</h3><p>If the call runs with the <code>anon</code> key and no signed-in session, <code>auth.uid()</code> is <code>null</code>, so <code>user_id = auth.uid()</code> can never be true.</p></div>
+
+  <h2><span class="n">02</span> The fix</h2>
+  <p>Give the table an INSERT policy that lets a signed-in user write <b>their own</b> rows, and make sure the row carries their id.</p>
+  <p class="filelabel">migration.sql</p>
+  <pre><span class="c">-- 1. RLS on (safe to run if it already is)</span>
+<span class="k">alter table</span> notes <span class="k">enable row level security</span>;
+
+<span class="c">-- 2. a signed-in user may insert rows that belong to them</span>
+<span class="k">create policy</span> <span class="s">"owner inserts own notes"</span> <span class="k">on</span> notes <span class="k">for insert</span>
+  <span class="k">with check</span> (user_id = (<span class="k">select</span> auth.uid()));</pre>
+  <p>Let the database fill the id so the client can't get it wrong:</p>
+  <p class="filelabel">migration.sql</p>
+  <pre><span class="k">alter table</span> notes
+  <span class="k">alter column</span> user_id <span class="k">set default</span> (<span class="k">select</span> auth.uid());</pre>
+  <p class="filelabel">insert.ts</p>
+  <pre><span class="c">// with the default above, just don't send user_id</span>
+<span class="k">await</span> supabase.from(<span class="s">'notes'</span>).insert({ title });
+
+<span class="c">// or set it explicitly from the signed-in user</span>
+<span class="k">const</span> { data: { <span class="u">user</span> } } = <span class="k">await</span> supabase.auth.getUser();
+<span class="k">await</span> supabase.from(<span class="s">'notes'</span>).insert({ title, user_id: <span class="u">user</span>.id });</pre>
+  <p>If cause 3 is yours, the fix is upstream: create the Supabase client with the user's session (their JWT), not the bare anon key — on the server, forward the request cookies so <code>auth.uid()</code> resolves.</p>
+
+  <h2><span class="n">03</span> The gotcha — <span class="mono">USING</span> vs <span class="mono">WITH CHECK</span></h2>
+  <ul>
+    <li><b><code>USING</code></b> filters rows the user can <b>see or affect</b> — <code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code>.</li>
+    <li><b><code>WITH CHECK</code></b> validates rows the user is <b>writing</b> — <code>INSERT</code> and <code>UPDATE</code>.</li>
+  </ul>
+  <p>An <code>INSERT</code> policy with only <code>USING</code> and no <code>WITH CHECK</code> doesn't permit the write — that throws this exact violation. For <code>UPDATE</code> you usually need <b>both</b>: <code>USING</code> to pick the row, <code>WITH CHECK</code> so the user can't edit it into someone else's.</p>
+
+  <h2><span class="n">04</span> Prove it — don't hope</h2>
+  <p>A policy you didn't test is a policy you don't have. Sign in as tenant A, confirm you can write your own row, and confirm you <b>can't</b> write one for tenant B.</p>
+  <div class="prove">
+    <div class="row"><span class="ok">✓</span> signed-in A inserts a row for A &nbsp;<span style="color:var(--dim)">→ succeeds</span></div>
+    <div class="row"><span class="bad">✗</span> A inserts a row with <b>user_id = B</b> &nbsp;<span style="color:var(--dim)">→ violates RLS (blocked, as it should)</span></div>
+    <div class="row"><span class="bad">✗</span> anon (no session) inserts anything &nbsp;<span style="color:var(--dim)">→ violates RLS</span></div>
+  </div>
+  <p>Run that against a real Postgres in CI on every migration, so a table that ships without a correct write policy turns the build red before production.</p>
+<div class="related"><div class="lbl">Related RLS guides</div><a href="/rls/write-owner-scoped-rls-policy-supabase/">Write an owner-scoped RLS policy (SELECT / INSERT / UPDATE / DELETE) <span class="arw">→</span></a><a href="/rls/enable-row-level-security-supabase-table/">Enable Row-Level Security on a Supabase table <span class="arw">→</span></a><a href="/rls/test-tenant-isolation-supabase/">Test tenant isolation in Supabase <span class="arw">→</span></a><a href="/rls/fix-permissive-rls-policy-using-true/">USING (true) is a security hole — fix a permissive policy <span class="arw">→</span></a></div>
+  <div class="cta">
+    <span class="soon">◆ FREE · MIT · npm + GitHub Action</span>
+    <h2>Catch this before it ships</h2>
+    <p><code>airlock-rls</code> is a CI gate that fails your build when a table ships exposed or a policy is permissive — the same class of bug, caught on the pull request instead of in prod.</p>
+    <div class="cmd"><span>npx airlock-rls</span><span class="arw">→</span></div>
+    <p style="margin-top:18px">Or start from <a href="https://github.com/mateuszingano/nextjs-supabase-starter"><code>nextjs-supabase-starter</code></a> — auth + a table with RLS + an isolation test, so a fresh table is safe by default.</p>
+  </div>
+  <div class="cta plain">
+    <span class="soon">FREE PDF</span>
+    <h2 style="font-size:20px">Grab the Supabase RLS cheat sheet</h2>
+    <p>The golden rules, the footguns that leak in prod, correct policy snippets, and the isolation test — on one page.</p>
+    <form onsubmit="return joinList(event)">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <input type="email" id="email" placeholder="you@yourstartup.dev" required aria-label="Email">
+      <button type="submit" class="btn">Email me the cheat sheet →</button>
+    </form>
+    <div class="msg mono" id="msg" style="margin-top:12px;font-size:13.5px;min-height:18px"></div>
+  </div>
+  <h2><span class="n">FAQ</span></h2>
+  <details><summary>Does this error mean my table is exposed?</summary><p>No — the opposite. RLS is on and doing its job (deny by default). The risk is when RLS is off: then there's no error and the table is public. This error means the guardrail is working; you just need a policy that permits the legitimate write.</p></details><details><summary>Why does the insert work in the SQL editor but fail from my app?</summary><p>The SQL editor runs as a privileged role that bypasses RLS. Your app runs as authenticated or anon, which RLS applies to. Always test writes the way your app makes them — signed in, through the client.</p></details><details><summary>Can I just disable RLS to make it go away?</summary><p>You can, and you'll have made the table public to anyone with your anon key — the #1 Supabase leak. Keep RLS on and add the correct policy instead.</p></details>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="/#tools">Free tools</a><a href="/rls/">RLS guides</a><a href="/cheatsheet/">Cheat sheet</a>
+      <a href="/pricing/">Pricing</a><a href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+    <div class="legal">ShipSealed — ship Supabase apps that don't leak 🦭 · Not affiliated with Supabase. Code samples are provided as-is; test against your own database.</div>
+  </div>
+</footer>
+<script>
+  var SUPABASE_URL='https://ukaelmxvgggvudlwwexk.supabase.co';
+  var SUPABASE_KEY='sb_publishable_ZfgF6NCfzH0T32Gjx5l-bw_DwleKw2S';
+  async function joinList(e){e.preventDefault();
+    var email=document.getElementById('email').value.trim();var msg=document.getElementById('msg');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='var(--red)';msg.textContent='✖ enter a valid email';return false;}
+    msg.style.color='var(--dim)';msg.textContent='joining…';var ok=false;
+    try{var r=await fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r.ok;}catch(x){}
+    if(!ok){try{var r2=await fetch(SUPABASE_URL+'/rest/v1/waitlist',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r2.ok||r2.status===409;}catch(x){}}
+    msg.style.color=ok?'var(--green)':'var(--red)';
+    msg.innerHTML=ok?'✔ on its way — check your inbox. <a href="/assets/supabase-rls-cheatsheet.pdf" style="text-decoration:underline">grab it now →</a>':'✖ something went wrong — try again.';
+    return false;}
+</script>
+</body>
+</html>

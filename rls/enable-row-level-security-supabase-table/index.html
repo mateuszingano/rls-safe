@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://shipsealed.com/rls/enable-row-level-security-supabase-table/">
+<title>How to enable Row-Level Security on a Supabase table</title>
+<meta name="description" content="Enable RLS on a Supabase table the right way: the one-line command, why RLS-on with no policy denies everything, the first owner policy to add, and how to verify it&#x27;s on.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233ecf8e'/><path d='M9 16.5l4.5 4.5L23 10' stroke='%23041b0f' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://shipsealed.com/rls/enable-row-level-security-supabase-table/">
+<meta property="og:title" content="How to enable Row-Level Security on a Supabase table">
+<meta property="og:description" content="Enable RLS on a Supabase table the right way: the one-line command, why RLS-on with no policy denies everything, the first owner policy to add, and how to verify it&#x27;s on.">
+<meta property="og:image" content="https://shipsealed.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to enable Row-Level Security on a Supabase table">
+<meta name="twitter:description" content="Enable RLS on a Supabase table the right way: the one-line command, why RLS-on with no policy denies everything, the first owner policy to add, and how to verify it&#x27;s on.">
+<meta name="twitter:image" content="https://shipsealed.com/assets/og.png">
+<link rel="stylesheet" href="/assets/guides.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "How to enable Row-Level Security on a Supabase table", "description": "Enable RLS on a Supabase table the right way: the one-line command, why RLS-on with no policy denies everything, the first owner policy to add, and how to verify it's on.", "url": "https://shipsealed.com/rls/enable-row-level-security-supabase-table/", "mainEntityOfPage": "https://shipsealed.com/rls/enable-row-level-security-supabase-table/", "inLanguage": "en", "author": {"@type": "Organization", "name": "ShipSealed"}, "publisher": {"@type": "Organization", "name": "ShipSealed"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://shipsealed.com/"}, {"@type": "ListItem", "position": 2, "name": "RLS guides", "item": "https://shipsealed.com/rls/"}, {"@type": "ListItem", "position": 3, "name": "How to enable Row-Level Security on a Supabase table", "item": "https://shipsealed.com/rls/enable-row-level-security-supabase-table/"}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does enabling RLS break my existing queries?", "acceptedAnswer": {"@type": "Answer", "text": "It will, until you add policies — RLS on with no policy denies everything. Enable it and add the policies your app needs in the same migration, then test the queries the way your app runs them (signed in, through the client)."}}, {"@type": "Question", "name": "Do I need RLS if I only talk to the database from a server?", "acceptedAnswer": {"@type": "Answer", "text": "If that server uses the service_role key, it bypasses RLS. But the moment any table is reachable by the anon or authenticated key from the browser, RLS is the only thing protecting it. Enable it on every table regardless — it costs nothing and closes the most common leak."}}]}]}</script>
+</head>
+<body>
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/"><span class="dot"></span>ShipSealed</a>
+    <div class="nav-links">
+      <a href="/#tools">Free tools</a>
+      <a href="/rls/">RLS guides</a>
+      <a href="/cheatsheet/">Cheat sheet</a>
+      <a class="gh" href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+<main class="wrap">
+  <p class="crumb"><a href="/">Home</a> / <a href="/rls/">RLS</a> / Enable Row-Level Security on a table</p>
+  <p class="eyebrow">Supabase RLS · How-to</p>
+  <h1>How to enable Row-Level Security on a Supabase table</h1>
+  <div class="byline"><span>Postgres 15 · Supabase</span><span class="ok">✓ code tested against a real database</span></div>
+  <div class="tldr"><div class="lbl">TL;DR</div><p>Run <code>alter table X enable row level security;</code> — ideally in the same migration that creates the table. But RLS on with <b>no policy denies every row</b>, so add at least one policy in the same step. Verify with <code>pg_class.relrowsecurity</code>.</p></div>
+  <h2><span class="n">01</span> Why it matters</h2>
+  <p>Every Supabase table is reachable from the browser through the <code>anon</code> key. Row-Level Security is the <b>only</b> thing between a user and everyone else's rows. RLS <b>off</b> = the table is public. So enabling it is not optional hardening — it's the security boundary.</p>
+
+  <h2><span class="n">02</span> Enable it</h2>
+  <p class="filelabel">migration.sql</p>
+  <pre><span class="k">alter table</span> notes <span class="k">enable row level security</span>;</pre>
+  <p>Do this in the <b>same migration that creates the table</b>, so a table can never exist without it. The <code>supabase-saas-kit</code> CLI generates migrations this way by default.</p>
+
+  <h2><span class="n">03</span> The gotcha — on with no policy denies everything</h2>
+  <p>Enabling RLS flips the table to <b>deny by default</b>. With no policy, every <code>select</code>/<code>insert</code>/<code>update</code>/<code>delete</code> returns nothing or errors — the table looks "broken." That's expected: you now have to grant access explicitly. Add at least a read policy:</p>
+  <p class="filelabel">migration.sql</p>
+  <pre><span class="k">create policy</span> <span class="s">"owner reads own notes"</span> <span class="k">on</span> notes <span class="k">for select</span>
+  <span class="k">using</span> (user_id = (<span class="k">select</span> auth.uid()));</pre>
+  <p>See <a href="/rls/write-owner-scoped-rls-policy-supabase/">the full owner-scoped policy set</a> for INSERT/UPDATE/DELETE.</p>
+
+  <h2><span class="n">04</span> Verify it's on</h2>
+  <p class="filelabel">check.sql</p>
+  <pre><span class="k">select</span> relname, relrowsecurity
+<span class="k">from</span> pg_class <span class="k">where</span> relname = <span class="s">'notes'</span>;
+<span class="c">-- relrowsecurity = t  → RLS is on</span></pre>
+  <p>Table owners bypass RLS by default. If you want the owner subject to it too (defense in depth), add <code>alter table notes force row level security;</code>.</p>
+<div class="related"><div class="lbl">Related RLS guides</div><a href="/rls/write-owner-scoped-rls-policy-supabase/">Write an owner-scoped RLS policy (all four operations) <span class="arw">→</span></a><a href="/rls/supabase-table-public-rls-off/">Why is my Supabase table public? (RLS is off) <span class="arw">→</span></a><a href="/rls/supabase-security-checklist-before-launch/">Supabase security checklist before launch <span class="arw">→</span></a></div>
+  <div class="cta">
+    <span class="soon">◆ FREE · MIT · npm + GitHub Action</span>
+    <h2>Catch this before it ships</h2>
+    <p><code>airlock-rls</code> is a CI gate that fails your build when a table ships exposed or a policy is permissive — the same class of bug, caught on the pull request instead of in prod.</p>
+    <div class="cmd"><span>npx airlock-rls</span><span class="arw">→</span></div>
+    <p style="margin-top:18px">Or start from <a href="https://github.com/mateuszingano/nextjs-supabase-starter"><code>nextjs-supabase-starter</code></a> — auth + a table with RLS + an isolation test, so a fresh table is safe by default.</p>
+  </div>
+  <div class="cta plain">
+    <span class="soon">FREE PDF</span>
+    <h2 style="font-size:20px">Grab the Supabase RLS cheat sheet</h2>
+    <p>The golden rules, the footguns that leak in prod, correct policy snippets, and the isolation test — on one page.</p>
+    <form onsubmit="return joinList(event)">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <input type="email" id="email" placeholder="you@yourstartup.dev" required aria-label="Email">
+      <button type="submit" class="btn">Email me the cheat sheet →</button>
+    </form>
+    <div class="msg mono" id="msg" style="margin-top:12px;font-size:13.5px;min-height:18px"></div>
+  </div>
+  <h2><span class="n">FAQ</span></h2>
+  <details><summary>Does enabling RLS break my existing queries?</summary><p>It will, until you add policies — RLS on with no policy denies everything. Enable it and add the policies your app needs in the same migration, then test the queries the way your app runs them (signed in, through the client).</p></details><details><summary>Do I need RLS if I only talk to the database from a server?</summary><p>If that server uses the service_role key, it bypasses RLS. But the moment any table is reachable by the anon or authenticated key from the browser, RLS is the only thing protecting it. Enable it on every table regardless — it costs nothing and closes the most common leak.</p></details>
+</main>
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="/#tools">Free tools</a><a href="/rls/">RLS guides</a><a href="/cheatsheet/">Cheat sheet</a>
+      <a href="/pricing/">Pricing</a><a href="https://github.com/mateuszingano">GitHub ↗</a>
+    </div>
+    <div class="legal">ShipSealed — ship Supabase apps that don't leak 🦭 · Not affiliated with Supabase. Code samples are provided as-is; test against your own database.</div>
+  </div>
+</footer>
+<script>
+  var SUPABASE_URL='https://ukaelmxvgggvudlwwexk.supabase.co';
+  var SUPABASE_KEY='sb_publishable_ZfgF6NCfzH0T32Gjx5l-bw_DwleKw2S';
+  async function joinList(e){e.preventDefault();
+    var email=document.getElementById('email').value.trim();var msg=document.getElementById('msg');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='var(--red)';msg.textContent='✖ enter a valid email';return false;}
+    msg.style.color='var(--dim)';msg.textContent='joining…';var ok=false;
+    try{var r=await fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r.ok;}catch(x){}
+    if(!ok){try{var r2=await fetch(SUPABASE_URL+'/rest/v1/waitlist',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({email:email,source:'rls-guide'})});ok=r2.ok||r2.status===409;}catch(x){}}
+    msg.style.color=ok?'var(--green)':'var(--red)';
+    msg.innerHTML=ok?'✔ on its way — check your inbox. <a href="/assets/supabase-rls-cheatsheet.pdf" style="text-decoration:underline">grab it now →</a>':'✖ something went wrong — try again.';
+    return false;}
+</script>
+</body>
+</html>
