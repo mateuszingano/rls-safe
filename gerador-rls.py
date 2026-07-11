@@ -332,6 +332,18 @@ def build_sitemap():
         sm.append('  <url><loc>%s/rls/%s/</loc><changefreq>monthly</changefreq></url>' % (BASE, s))
     sm.append('</urlset>')
     io.open(os.path.join(HERE, "rls-sitemap.xml"), "w", encoding="utf-8").write("\n".join(sm) + "\n")
+
+    # sitemap.xml principal: páginas core do site + o hub + as guias de RLS
+    core = ["/", "/pricing/", "/cheatsheet/", "/privacy/", "/terms/", "/refunds/", "/rls/"]
+    main = ['<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for path in core:
+        pr = ' <priority>1.0</priority>' if path == "/" else ''
+        main.append('  <url><loc>%s%s</loc><changefreq>weekly</changefreq>%s</url>' % (BASE, path, pr))
+    for s in slugs:
+        main.append('  <url><loc>%s/rls/%s/</loc><changefreq>monthly</changefreq></url>' % (BASE, s))
+    main.append('</urlset>')
+    io.open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf-8").write("\n".join(main) + "\n")
     return len(slugs)
 
 

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://shipsealed.com/rls-sitemap.xml
+Sitemap: https://shipsealed.com/sitemap.xml
