@@ -15,12 +15,24 @@
  *   3) PADDLE.environment — flip to 'production' (leave 'sandbox' only while testing).
  */
 window.PADDLE = {
-  environment: 'sandbox',        // 'production' when live
-  token: '',                     // '' = dormant. Fill with the client-side token to arm checkout.
+  environment: 'production',
+  token: 'live_d70c26e0d9ecf79a9b177a12ce9',
   // Production price IDs, seat index 0..4 (1 dev, 2, 3, 4, 5–8 devs). Order matches the seat buttons.
   priceIds: {
-    base: ['', '', '', '', ''],
-    pro:  ['', '', '', '', ''],
+    base: [
+      'pri_01kxgz2rphzs70p4ptv6gxreg2', // 1 dev  — $119.99
+      'pri_01kxgz2rwn40gyq3nknzh5a0m2', // 2 devs — $199.99
+      'pri_01kxgz2s2p095w5hwyarrrjvz9', // 3 devs — $279.99
+      'pri_01kxgz2s8fev99fxbb0kgjxeqk', // 4 devs — $349.99
+      'pri_01kxgz2seb7wwe1z6qxpqnm442', // 5–8 devs — $399.99
+    ],
+    pro: [
+      'pri_01kxgz2t18dvwtgsj062mpsahs', // 1 dev  — $179.99
+      'pri_01kxgz2t7enx3p4mah32feqwf4', // 2 devs — $249.99
+      'pri_01kxgz2td61cq616rsn6bxrsc6', // 3 devs — $329.99
+      'pri_01kxgz2tkgwafp434qzzq9ja3a', // 4 devs — $399.99
+      'pri_01kxgz2ts97sfdh5jfgrsbkwj5', // 5–8 devs — $479.99
+    ],
   },
 };
 
