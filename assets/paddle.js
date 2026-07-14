@@ -33,6 +33,10 @@ window.PADDLE = {
       'pri_01kxgz2tkgwafp434qzzq9ja3a', // 4 devs — $399.99
       'pri_01kxgz2ts97sfdh5jfgrsbkwj5', // 5–8 devs — $479.99
     ],
+    // à-la-carte add-ons — flat price (a string, not a seat array)
+    'kit-auth-rls': 'pri_01kxgz2vydz85g6h8syxj4by36', // $39.99
+    'test-kit':     'pri_01kxgz2wg8v0qa7x0xg5njjseb', // $29.99
+    'ui-kit':       'pri_01kxgz2vbw8rge6kvcafb2k6yy', // $4.99
   },
 };
 
@@ -66,9 +70,10 @@ window.PADDLE = {
     for (var i = 0; i < buttons.length; i++) {
       buttons[i].addEventListener('click', function (e) {
         var plan = this.getAttribute('data-paddle-plan');
-        var ids = (P.priceIds && P.priceIds[plan]) || [];
-        var priceId = ids[currentSeat()];
-        if (!priceId) return;              // no id for this tier → let the link fall through to the waitlist
+        var entry = P.priceIds && P.priceIds[plan];
+        // Base/Pro are seat arrays; à-la-carte add-ons are a flat string.
+        var priceId = Array.isArray(entry) ? entry[currentSeat()] : entry;
+        if (!priceId) return;              // no id → let the link fall through
         e.preventDefault();
         Paddle.Checkout.open({
           settings: { successUrl: 'https://boilerplate-delivery.vercel.app/' },
