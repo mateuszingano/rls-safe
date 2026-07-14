@@ -70,7 +70,10 @@ window.PADDLE = {
         var priceId = ids[currentSeat()];
         if (!priceId) return;              // no id for this tier → let the link fall through to the waitlist
         e.preventDefault();
-        Paddle.Checkout.open({ items: [{ priceId: priceId, quantity: 1 }] });
+        Paddle.Checkout.open({
+          settings: { successUrl: 'https://boilerplate-delivery.vercel.app/' },
+          items: [{ priceId: priceId, quantity: 1 }],
+        });
       });
     }
   }
