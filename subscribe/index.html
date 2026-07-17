@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Subscribe — Airlock Monitor</title>
+  <style>
+    :root { --bg:#0d1117; --panel:#141b23; --edge:#243240; --ink:#e7edf3; --muted:#9fb0bf; --mint:#3ecf8e; }
+    * { box-sizing:border-box }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--ink);
+           font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; text-align:center; padding:2rem }
+    .card { max-width:440px; border:1px solid var(--edge); background:var(--panel); border-radius:16px; padding:2.4rem 2rem }
+    h1 { font-size:1.4rem; margin:0 0 .6rem; letter-spacing:-.01em }
+    .mint { color:var(--mint) }
+    p { color:var(--muted); line-height:1.55; margin:.4rem 0 }
+    a.btn { display:inline-block; margin-top:1.2rem; background:var(--mint); color:#04140d; font-weight:700;
+            text-decoration:none; padding:.6rem 1.1rem; border-radius:8px }
+    .err { color:#e6b450 }
+    code { color:var(--ink) }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Setting up <span class="mint">Airlock Pro</span>…</h1>
+    <p id="status">Opening secure checkout…</p>
+    <div id="fallback" style="display:none">
+      <p class="err">Couldn't open the checkout automatically.</p>
+      <a class="btn" href="#" id="retry">Open checkout</a>
+    </div>
+  </div>
+
+  <script>
+    // ShipSealed is the approved Paddle domain, so the Monitor checkout runs HERE.
+    // The Monitor app (monitor.shipsealed.com) sends the signed-in user's id + email
+    // in the URL; Paddle copies custom_data.owner_id onto the subscription, and the
+    // Monitor webhook attaches it to that account. No account is created here.
+    var PADDLE_TOKEN = 'live_d70c26e0d9ecf79a9b177a12ce9';        // public client token (same as the store)
+    var MONITOR_PRICE = 'pri_01kxgz2x3bnkhgt6xtcdmctj7p';         // Airlock Monitor — $19.99/mo
+    var MONITOR_APP = 'https://monitor.shipsealed.com';
+
+    var q = new URLSearchParams(location.search);
+    var uid = q.get('uid');
+    var email = q.get('email');
+
+    var statusEl = document.getElementById('status');
+    var fallbackEl = document.getElementById('fallback');
+
+    // No user id → they need a Monitor account first. Send them to sign up.
+    if (!uid) {
+      statusEl.textContent = 'Redirecting you to create your account…';
+      location.href = MONITOR_APP + '/signup';
+    } else {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
+      s.async = true;
+      s.onload = function () {
+        try {
+          Paddle.Initialize({ token: PADDLE_TOKEN });
+          openCheckout();
+        } catch (e) { showFallback(); }
+      };
+      s.onerror = showFallback;
+      document.head.appendChild(s);
+    }
+
+    function openCheckout() {
+      Paddle.Checkout.open({
+        items: [{ priceId: MONITOR_PRICE, quantity: 1 }],
+        customData: { owner_id: uid },
+        customer: email ? { email: email } : undefined,
+        settings: { variant: 'one-page', successUrl: MONITOR_APP + '/dashboard' },
+      });
+      statusEl.textContent = 'Complete your subscription in the checkout window.';
+    }
+
+    function showFallback() {
+      statusEl.style.display = 'none';
+      fallbackEl.style.display = 'block';
+      document.getElementById('retry').addEventListener('click', function (e) {
+        e.preventDefault();
+        try { openCheckout(); } catch (_) {}
+      });
+    }
+  </script>
+</body>
+</html>
