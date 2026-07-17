@@ -37,6 +37,10 @@ window.PADDLE = {
     'kit-auth-rls': 'pri_01kxgz2vydz85g6h8syxj4by36', // $39.99
     'test-kit':     'pri_01kxgz2wg8v0qa7x0xg5njjseb', // $29.99
     'ui-kit':       'pri_01kxgz2vbw8rge6kvcafb2k6yy', // $4.99
+    // Airlock Monitor subscription — buy here (pay-first). After payment the
+    // Monitor webhook provisions the account from the buyer's email and mails a
+    // login link, so the success page just says "check your email".
+    'monitor':      'pri_01kxgz2x3bnkhgt6xtcdmctj7p', // $19.99/mo
   },
 };
 
@@ -75,8 +79,13 @@ window.PADDLE = {
         var priceId = Array.isArray(entry) ? entry[currentSeat()] : entry;
         if (!priceId) return;              // no id → let the link fall through
         e.preventDefault();
+        // The Monitor is a subscription (provisioned by email post-payment), so it
+        // lands on the "check your email" page; one-time products go to delivery.
+        var successUrl = plan === 'monitor'
+          ? 'https://shipsealed.com/welcome/'
+          : 'https://boilerplate-delivery.vercel.app/';
         Paddle.Checkout.open({
-          settings: { successUrl: 'https://boilerplate-delivery.vercel.app/' },
+          settings: { successUrl: successUrl },
           items: [{ priceId: priceId, quantity: 1 }],
         });
       });
