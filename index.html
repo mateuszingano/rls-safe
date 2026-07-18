@@ -66,7 +66,7 @@
       border-bottom:1px solid transparent;transition:border-color .3s}
   nav.scrolled{border-bottom-color:var(--line)}
   nav .wrap{display:flex;align-items:center;justify-content:space-between}
-  .logo{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:-.5px;display:flex;align-items:center;gap:9px}
+  .logo{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:-.5px;display:flex;align-items:center;gap:9px;color:var(--text);text-decoration:none}
   .logo .dot{width:11px;height:11px;border-radius:3px;background:var(--green);box-shadow:0 0 14px var(--green)}
   .nav-links{display:flex;gap:22px;font-family:var(--mono);font-size:13px;align-items:center}
   .nav-links a{color:var(--muted);transition:color .2s} .nav-links a:hover{color:var(--text)}
@@ -274,7 +274,7 @@
 
   <nav id="nav">
     <div class="wrap">
-      <div class="logo"><span class="dot"></span>ShipSealed</div>
+      <a href="#top" class="logo" aria-label="Back to top"><span class="dot"></span>ShipSealed</a>
       <div class="nav-links" id="navlinks">
         <a href="#tools">Free tools</a>
         <a href="#paid">Pricing</a>
@@ -290,7 +290,7 @@
 <div class="wrap">
 
   <!-- HERO -->
-  <header class="hero">
+  <header id="top" class="hero">
    <div class="hero-top">
     <div class="hero-copy">
     <span class="pill"><span class="live"></span>for Supabase &middot; free &amp; open source</span>
