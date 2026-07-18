@@ -195,7 +195,12 @@
         padding:14px 16px;border-radius:10px;font-size:15px;font-family:var(--sans);transition:border-color .2s}
   input[type=email]:focus{outline:none;border-color:var(--green-dim);box-shadow:0 0 0 3px rgba(31,227,184,.12)}
   .msg{margin-top:18px;font-family:var(--mono);font-size:14px;min-height:20px}
-  footer{padding:44px 0 56px;color:var(--dim);font-size:13px;font-family:var(--mono);
+  .signup-grid{display:flex;align-items:center;justify-content:center;gap:46px;text-align:left;flex-wrap:wrap;max-width:900px;margin:0 auto}
+  .signup-copy{flex:1;min-width:300px;max-width:460px}
+  .signup-copy form{margin:24px 0 0;justify-content:flex-start}
+  .signup-peek img{display:block;width:288px;max-width:100%;height:auto;border-radius:12px;border:1px solid var(--line-2);box-shadow:0 30px 70px -24px rgba(0,0,0,.7);transform:rotate(1.6deg)}
+  @media(max-width:760px){.signup-peek{display:none}.signup-grid{text-align:center}.signup-copy form{justify-content:center;margin:24px auto 0}}
+  footer{padding:26px 0 30px;color:var(--dim);font-size:13px;font-family:var(--mono);
          display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
   footer a{color:var(--muted)}
 
@@ -413,18 +418,25 @@
 
   <!-- LEAD MAGNET: RLS CHEAT SHEET -->
   <section class="signup reveal" id="list">
-    <h2>Free: the Supabase RLS cheat sheet</h2>
-    <p class="lead" style="margin:14px auto 6px">The common RLS gotchas on one page — the policies, the tests, and the footguns that ship a table exposed. Drop your email and it lands in your inbox.</p>
-    <p class="lead" style="margin:0 auto 8px;font-size:15px">You'll also be first to hear when we ship new tools. No spam, unsubscribe anytime.</p>
-    <form id="waitlist" onsubmit="return joinList(event)">
-      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0">
-      <input type="email" id="email" placeholder="you@yourstartup.dev" required autocomplete="email">
-      <button type="submit" class="btn btn-primary">Send me the cheat sheet →</button>
-    </form>
-    <div class="msg mono" id="msg"></div>
+    <div class="signup-grid">
+      <div class="signup-copy">
+        <h2>Free: the Supabase RLS cheat sheet</h2>
+        <p class="lead" style="margin:14px 0 6px">The common RLS gotchas on one page — the policies, the tests, and the footguns that ship a table exposed. Drop your email and it lands in your inbox.</p>
+        <p class="lead" style="margin:0 0 8px;font-size:15px">You'll also be first to hear when we ship new tools. No spam, unsubscribe anytime.</p>
+        <form id="waitlist" onsubmit="return joinList(event)">
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0">
+          <input type="email" id="email" placeholder="you@yourstartup.dev" required autocomplete="email">
+          <button type="submit" class="btn btn-primary">Send me the cheat sheet →</button>
+        </form>
+        <div class="msg mono" id="msg"></div>
+      </div>
+      <div class="signup-peek">
+        <img src="assets/cheatsheet-preview.png" alt="Preview of the Supabase RLS cheat sheet — the golden rules, the footguns, and the correct owner-scoped policy" loading="lazy">
+      </div>
+    </div>
   </section>
 
-  <footer style="flex-direction:column;align-items:flex-start;gap:14px">
+  <footer style="flex-direction:column;align-items:flex-start;gap:9px">
     <div style="display:flex;gap:20px;flex-wrap:wrap">
       <a href="pricing/">Pricing</a>
       <a href="terms/">Terms</a>
@@ -433,7 +445,7 @@
       <a href="mailto:support@shipsealed.com">Contact</a>
       <a href="https://github.com/mateuszingano" target="_blank" rel="noopener">GitHub ↗</a>
     </div>
-    <span style="max-width:660px;line-height:1.75">ShipSealed is a brand operated by Mateus Zingano Mendes Eventos (CNPJ 23.878.157/0001-10), Canela/RS, Brazil. Payments processed by Paddle.com, our Merchant of Record. Not affiliated with Supabase.</span>
+    <span style="max-width:880px;line-height:1.6">ShipSealed is a brand operated by Mateus Zingano Mendes Eventos (CNPJ 23.878.157/0001-10), Canela/RS, Brazil. Payments processed by Paddle.com, our Merchant of Record. Not affiliated with Supabase.</span>
   </footer>
 
 </div>
