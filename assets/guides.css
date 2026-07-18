@@ -55,7 +55,7 @@ code{font-family:var(--mono);font-size:13.5px;background:#0c141d;border:1px soli
 pre{font-family:var(--mono);font-size:13px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:11px;padding:16px 18px;overflow-x:auto;line-height:1.7;margin:14px 0;color:var(--text)}
 pre b{color:var(--text)} pre .k{color:var(--green)} pre .c{color:var(--dim)} pre .s{color:#e5b567}
-pre .u{color:#79b8ff} pre .bad{color:var(--red)} pre .ok{color:var(--green)}
+pre .u{color:#79b8ff} pre .bad{color:var(--wax-2)} pre .ok{color:var(--green)}
 .filelabel{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin:16px 0 -6px;letter-spacing:.03em}
 
 .cause{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:12px 0}
@@ -66,7 +66,7 @@ pre .u{color:#79b8ff} pre .bad{color:var(--red)} pre .ok{color:var(--green)}
 
 .prove{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
 .prove .row{font-family:var(--mono);font-size:13.5px;margin:6px 0;color:var(--muted)}
-.prove .row .ok{color:var(--green)} .prove .row .bad{color:var(--red)}
+.prove .row .ok{color:var(--green)} .prove .row .bad{color:var(--wax-2)}
 
 .related{border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;background:var(--panel-2)}
 .related .lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
