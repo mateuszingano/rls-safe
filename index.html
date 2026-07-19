@@ -236,6 +236,14 @@
   .ptier{font-family:var(--mono);font-size:13px;color:var(--muted)}
   .ptier b{color:var(--green);font-size:17px;margin-left:3px}
   .ptier .tag{color:var(--amber);font-size:9.5px;letter-spacing:.4px;margin-left:5px}
+  .buyband{margin-top:11px;border-top:1px solid var(--line-2);padding-top:9px;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--muted)}
+  .buyband p{margin:0 0 4px}
+  .buyband .bl{display:inline-block;min-width:66px;color:var(--green);font-weight:700;letter-spacing:.4px}
+  .buyband .s{color:var(--dim)}
+  .buyband a{color:var(--green);text-decoration:none;font-weight:600}
+  .buyband a:hover{text-decoration:underline}
+  .buyband .bhelp{margin-top:7px;color:var(--dim)}
+  @media(max-width:600px){.buyband .bl{display:block;min-width:0}}
   .flag2 .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .flag2 .btns .lnk{font-family:var(--mono);font-size:11.5px;color:var(--dim);text-decoration:none}
   .flag2 .btns .lnk.demo{color:var(--green)}
@@ -548,6 +556,12 @@
             <a class="btn btn-primary" href="#paid" data-paddle-plan="pro">Get Pro →</a>
           </div>
         </div>
+        <div class="buyband">
+          <p><span class="bl">STACK</span> Next.js 16 · React 19 · TypeScript 5 · Supabase <span class="s">·</span> last updated July 2026</p>
+          <p><span class="bl">DELIVERY</span> Read access to the private GitHub repo. Enter your GitHub username on the receipt page and the invite lands in your inbox — clone and go. <span class="s">Seats = invites; the licence covers unlimited projects you own or build for clients.</span></p>
+          <p><span class="bl">REFUND</span> 14 days, money back, no hard feelings. <a href="refunds/">Read the policy</a>.</p>
+          <p class="bhelp">Checkout blocked by an adblocker or a corporate proxy? Email <a href="mailto:support@shipsealed.com?subject=Direct%20checkout%20link">support@shipsealed.com</a> and I'll send a direct link. Mateus answers.</p>
+        </div>
       </div>
 
       <!-- 3 PIECES side by side -->
@@ -556,7 +570,7 @@
         <a class="piece" href="#paid" data-paddle-plan="test-kit"><div class="pt"><span class="pn">Test Kit</span><span class="pp">$29.99</span></div><p class="pd">the full testing pyramid + RLS harness</p><span class="pa buy">Get it →</span></a>
         <a class="piece" href="#paid" data-paddle-plan="ui-kit"><div class="pt"><span class="pn">ui-kit</span><span class="pp">$4.99</span></div><p class="pd">15 themeable React components</p><span class="pa buy">Get it →</span></a>
       </div>
-      <div class="piece-note">Take 2 or more pieces and save 10%.</div>
+      <div class="piece-note">Each piece is a slice of the boilerplate, sold on its own. Same repo, same tests, same 14-day refund.</div>
 
       <!-- AIRLOCK MONITOR band — recurring, the long-term asset -->
       <div class="monitor-band">

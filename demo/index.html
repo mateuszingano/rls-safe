@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Live demo — the exact RLS policy + test, proven against a real Postgres · ShipSealed</title>
 <meta name="description" content="The real RLS policy, a real HTTP request as one tenant, the raw response from a live Postgres. One app leaks, one blocks. Verify it yourself.">
+<link rel="canonical" href="https://shipsealed.com/demo/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shipsealed.com/demo/">
+<meta property="og:title" content="Live demo — a cross-tenant leak, blocked by Postgres · ShipSealed">
+<meta property="og:description" content="Same database, same tenant, same goal. One policy leaks, one blocks. Real HTTP against a live Postgres — verify it yourself.">
+<meta property="og:image" content="https://shipsealed.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{
     --bg:#07080a;--panel:#0f1113;--panel-2:#0c0e11;--line:#20242a;--line-2:#2a3038;
@@ -54,6 +61,12 @@
   .verdict.show{display:block}
   .verdict.leaked{background:rgba(255,107,90,.12);border:1px solid var(--red);color:var(--red)}
   .verdict.blocked{background:rgba(31,227,184,.1);border:1px solid var(--green-dim);color:var(--green-2)}
+  .verdict.proof{background:rgba(233,96,62,.1);border:1px solid var(--wax);color:var(--wax-2);margin-top:7px}
+  /* Standalone only: inside the home iframe the site nav is already there. */
+  .homelink{display:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green);text-decoration:none;margin-bottom:14px}
+  .homelink:hover{text-decoration:underline}
+  .btn-proof{background:transparent;border:1px solid var(--line-2);color:var(--muted);font-size:12px;padding:10px 14px;border-radius:10px}
+  .btn-proof:not(:disabled):hover{border-color:var(--wax);color:var(--wax-2)}
   .foot{margin-top:9px;color:var(--dim);font-family:var(--mono);font-size:12px}
   .foot a{font-weight:600}
   .verify{margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
@@ -69,11 +82,13 @@
 </head>
 <body>
 <div class="wrap">
+  <a class="homelink" id="homelink" href="/">◆ ShipSealed</a>
   <span class="kick">◆ LIVE DEMO · REAL POSTGRES · VERIFY IT YOURSELF</span>
   <h1>Same database, same tenant, same goal. One policy <span class="leak">leaks.</span> One <span class="seal">blocks.</span></h1>
   <p class="sub">You're <b>Acme</b>. <b>Globex</b> is another tenant with a confidential memo. Below are the <b>real RLS policies</b> and a <b>real HTTP request</b> sent as Acme — the raw response comes straight from a live Postgres. No mockups, no JavaScript theater.</p>
   <div class="playrow">
     <button class="btn btn-play" id="play-btn" disabled>▶ Play the demo</button>
+    <button class="btn btn-proof" id="proof-btn" disabled>“0 rows just means the table is empty” — prove me wrong →</button>
     <span class="live" id="live-status"><span class="dot"></span>connecting to the live database…</span>
   </div>
 
@@ -115,6 +130,11 @@
         <div class="code" id="seal-res"></div>
       </div>
       <div class="verdict" id="seal-verdict"></div>
+      <div class="io" id="proof-wrap" style="display:none">
+        <div class="lbl">the same query — but signed in as Globex, who owns the row</div>
+        <div class="code" id="proof-res"></div>
+      </div>
+      <div class="verdict" id="proof-verdict"></div>
     </div>
   </div>
 
@@ -131,6 +151,9 @@
   var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrYWVsbXh2Z2dndnVkbHd3ZXhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNjIzMjAsImV4cCI6MjA5ODkzODMyMH0.vbyYH5wEdJv7g2LDd63NGWgwvkVsuGHSnL9nvrqz9Qk';
   var GLOBEX_SECRET_ID='4ba6e87d-059b-4865-843d-222081f159dc';
   var token=null;
+  // Embedded in the home, the site nav is right there; standalone (Google, a
+  // shared link) the page would be a dead end without a way back.
+  if(window.top===window.self){document.getElementById('homelink').style.display='inline-block';}
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
   function status(txt,cls){var s=document.getElementById('live-status');s.innerHTML='<span class="dot"></span>'+txt;s.className='live'+(cls?' '+cls:'');}
 
@@ -144,6 +167,10 @@
   }
   function autoRun(){
     var b=document.getElementById('play-btn'); b.textContent='▶ Replay';
+    var p=document.getElementById('proof-btn');
+    p.disabled=false; p.textContent='“0 rows just means the table is empty” — prove me wrong →';
+    document.getElementById('proof-wrap').style.display='none';
+    document.getElementById('proof-verdict').className='verdict';
     run('demo_leaky_notes?select=title,body&tenant=eq.Globex', document.getElementById('leak-req'), document.getElementById('leak-res-wrap'), document.getElementById('leak-res'), document.getElementById('leak-verdict'), false);
     run('notes?select=*&id=eq.'+GLOBEX_SECRET_ID, document.getElementById('seal-req'), document.getElementById('seal-res-wrap'), document.getElementById('seal-res'), document.getElementById('seal-verdict'), true);
   }
@@ -180,6 +207,41 @@
       verdict.innerHTML=rows.length?'✗ LEAKED — Globex\'s memo came back to Acme. This is the exact bug airlock-rls fails your build on.':'blocked';
     }
   }
+
+  // The skeptic's out: "0 rows just means the row isn't there." So run the EXACT
+  // same URL as Globex, who owns it — 1 row comes back. Same query, different
+  // tenant: the only variable is the policy.
+  async function proveRowExists(){
+    var btn=document.getElementById('proof-btn');
+    btn.disabled=true; btn.textContent='signing in as Globex…';
+    try{
+      var a=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:ANON,'Content-Type':'application/json'},body:JSON.stringify({email:'globex@shipsealed.dev',password:'demo1234'})});
+      var aj=await a.json(); var gtok=aj.access_token;
+      if(!gtok) throw new Error('no token');
+      var url=SB_URL+'/rest/v1/notes?select=*&id=eq.'+GLOBEX_SECRET_ID;
+      var t0=performance.now();
+      var r=await fetch(url,{headers:{apikey:ANON,authorization:'Bearer '+gtok}});
+      var ms=Math.round(performance.now()-t0);
+      var body=await r.text();
+      var rows; try{rows=JSON.parse(body);}catch(_){rows=[];}
+      document.getElementById('proof-wrap').style.display='';
+      document.getElementById('proof-res').innerHTML=
+        '<span class="ok">GET</span> '+esc(url)+'\n'+
+        '<span class="cmt">authorization:</span> Bearer '+gtok.slice(0,18)+'…  <span class="cmt">← Globex, not Acme</span>\n\n'+
+        '<span class="cmt">HTTP</span> <span class="ok">'+r.status+'</span> <span class="cmt">· '+ms+'ms · rows: '+rows.length+'</span>\n'+
+        '<span class="bad">'+esc(body)+'</span>';
+      var v=document.getElementById('proof-verdict');
+      v.className='verdict proof show';
+      v.innerHTML=rows.length
+        ? '◆ The row was there the whole time. Same URL, same database — only the tenant changed. Acme got 0 rows because the policy said no, not because the table was empty.'
+        : '◆ Globex got 0 rows too — the demo row is missing, so ignore this run.';
+      btn.textContent='✓ proven — the row exists';
+    }catch(e){
+      btn.disabled=false;
+      btn.textContent='couldn\'t reach the DB — run it yourself: npx airlock-rls ↓';
+    }
+  }
+  document.getElementById('proof-btn').addEventListener('click',proveRowExists);
 
   document.getElementById('play-btn').addEventListener('click',function(){
     this.textContent='▶ Replay';
