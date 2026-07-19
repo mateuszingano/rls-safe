@@ -463,7 +463,7 @@
           <li>You're not on Supabase / Postgres RLS</li>
           <li>You don't use migrations or CI at all</li>
           <li>Your app is single-user, so there's no tenant to isolate</li>
-          <li>You want a UI kit or a landing page, not security plumbing</li>
+          <li>You're shopping for a landing page template, not plumbing</li>
         </ul>
       </div>
     </div>
@@ -681,7 +681,7 @@ or add an allow-rule for intentionally-public policies.</pre></div>
           <button type="submit" class="btn btn-primary">Send me the cheat sheet →</button>
         </form>
         <div class="msg mono" id="msg"></div>
-        <p class="already">Already convinced? <a href="checkout/?plan=pro" data-paddle-plan="pro">Get Pro — $179.99</a> <span class="s">· one payment · 14-day refund</span></p>
+        <p class="already">Already convinced? <a href="checkout/?plan=pro" data-paddle-plan="pro">Get Pro — <b id="ppEnd">$179.99</b></a> <span class="s">· one payment · 14-day refund</span></p>
       </div>
       <div class="signup-peek">
         <img src="assets/cheatsheet-preview.png" alt="Preview of the Supabase RLS cheat sheet — the golden rules, the footguns, and the correct owner-scoped policy" loading="lazy">
@@ -784,11 +784,16 @@ or add an allow-rule for intentionally-public policies.</pre></div>
     var PRO =[179.99,249.99,329.99,399.99,479.99];
     var seats=document.getElementById('phseats'); if(!seats) return;
     var pb=document.getElementById('pb'), pp=document.getElementById('pp');
+    // The closing CTA buys the SAME seat tier (paddle.js reads .seat-btn.active
+    // globally), so its label has to follow the selector or it would advertise
+    // one price and open another.
+    var ppEnd=document.getElementById('ppEnd');
     function m(n){return '$'+n.toFixed(2);}
     seats.addEventListener('click',function(e){
       var b=e.target.closest('.seat-btn'); if(!b) return;
       var i=parseInt(b.getAttribute('data-i'),10);
       pb.textContent=m(BASE[i]); pp.textContent=m(PRO[i]);
+      if(ppEnd) ppEnd.textContent=m(PRO[i]);
       var all=seats.querySelectorAll('.seat-btn');
       for(var k=0;k<all.length;k++) all[k].classList.toggle('active', k===i);
     });

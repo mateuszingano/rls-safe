@@ -20,6 +20,7 @@
   .ck .b{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px;padding:11px 18px;border-radius:10px;text-decoration:none}
   .ck .b.primary{background:var(--green);color:#04120b}
   .ck .b.ghost{border:1px solid var(--line-2);color:var(--text)}
+  .ck .seatwarn{display:block;font-family:var(--mono);font-size:11px;color:var(--wax-2);margin-top:6px}
   .ck .note{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:10px}
   .why li{margin-bottom:6px}
 </style>
@@ -48,7 +49,7 @@
     <div class="ck">
       <div class="what" id="what">You're buying a <b>ShipSealed</b> product.</div>
       <div class="btnrow">
-        <a class="b primary" href="#" id="retry">Open the payment window →</a>
+        <a class="b primary" href="mailto:support@shipsealed.com?subject=Direct%20payment%20link" id="retry">Open the payment window →</a>
         <a class="b ghost" href="mailto:support@shipsealed.com?subject=Direct%20payment%20link" id="mail">Email me a direct link</a>
       </div>
       <p class="note">Mateus answers the support address personally. Include the product name and I'll send a payment link you can open anywhere.</p>
@@ -93,8 +94,8 @@
   // Which product were they trying to buy? The buy links pass ?plan=, so this
   // page can name it, prefill the support email, and retry the right checkout.
   var PLANS = {
-    'base':         { name: 'the SaaS Boilerplate — Base', price: 'from $119.99' },
-    'pro':          { name: 'the SaaS Boilerplate — Pro',  price: 'from $179.99' },
+    'base':         { name: 'the SaaS Boilerplate — Base', price: '$119.99' },
+    'pro':          { name: 'the SaaS Boilerplate — Pro',  price: '$179.99' },
     'kit-auth-rls': { name: 'Kit Auth + RLS',              price: '$39.99' },
     'test-kit':     { name: 'Test Kit',                    price: '$29.99' },
     'ui-kit':       { name: 'ui-kit',                      price: '$4.99' },
@@ -104,9 +105,15 @@
   var plan = (new URLSearchParams(location.search).get('plan') || '').toLowerCase();
   var p = PLANS[plan];
 
+  // Seats live in the page the buyer came FROM, and a static href can't carry
+  // them — so this page only ever sells the single-seat licence, and says so.
+  // Anything bigger goes through email rather than charging the wrong tier.
+  var SEATED = (plan === 'base' || plan === 'pro');
+
   if (p) {
     document.getElementById('what').innerHTML =
-      'You\'re buying <b>' + p.name + '</b> · ' + p.price;
+      'You\'re buying <b>' + p.name + '</b> · ' + p.price +
+      (SEATED ? ' <span class="seatwarn">single-developer licence — need 2+ seats? email me and I\'ll send that link instead</span>' : '');
     document.getElementById('mail').href =
       'mailto:support@shipsealed.com?subject=' +
       encodeURIComponent('Direct payment link — ' + p.name);
