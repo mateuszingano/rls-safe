@@ -1,18 +1,21 @@
 /* ShipSealed — Paddle Billing checkout.
  *
- * DORMANT BY DESIGN. While PADDLE.token is empty this file does nothing: the
- * plan buttons keep their current behavior (they link to the waitlist at /#list).
- * Nothing loads, nothing changes.
+ * LIVE. The token below is a production client-side token and this store takes
+ * real money: clicking any [data-paddle-plan] element opens the Paddle overlay.
  *
- * GO-LIVE (once Paddle verification is approved): fill in the three things below,
- * commit, push. The checkout turns on. No other file needs to change.
- *   1) PADDLE.token       — Paddle > Developer tools > Authentication > Client-side token
- *                           (starts with "live_"; for testing, a "test_" token + environment:'sandbox').
- *                           This is a PUBLIC token — safe to ship in the browser.
- *   2) PADDLE.priceIds    — the production price IDs, by plan and seat index (0 = 1 dev … 4 = 5–8 devs).
- *                           Produce them by running paddle/criar-catalogo.mjs against production,
- *                           then copy the ids out of paddle/paddle-ids.json.
- *   3) PADDLE.environment — flip to 'production' (leave 'sandbox' only while testing).
+ * The href on those elements is a FALLBACK, not the real destination. Every buy
+ * link points at /checkout/?plan=<plan>, a rescue page that explains the overlay
+ * was blocked and offers a direct link by email. With JavaScript alive the click
+ * is preventDefault()ed and the href is never followed — so judge this by
+ * CLICKING, not by reading the markup. (Reading it wrong has cost us a session.)
+ *
+ * Base and Pro are seat arrays indexed 0 = 1 dev … 4 = 5–8 devs, chosen from
+ * whichever .seat-btn carries .active at click time. Add-ons are a flat string.
+ * The seat selector and any price label near a buy button must stay in sync, or
+ * the page advertises one price and charges another.
+ *
+ * The public token is safe in the browser. Price IDs come from
+ * paddle/criar-catalogo.mjs; the ids live in paddle/paddle-ids.json.
  */
 window.PADDLE = {
   environment: 'production',
