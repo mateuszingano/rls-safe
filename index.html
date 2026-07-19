@@ -209,6 +209,7 @@
   .flag2 .fd{color:var(--muted);font-size:13px;margin-top:4px}
   .flag2 .fd strong{color:var(--text)}
   .proof2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:11px 0 0}
+  @media(max-width:600px){.proof2{grid-template-columns:1fr}}
   .proof2 pre{font-family:var(--mono);font-size:10.5px;line-height:1.5;color:var(--muted);background:#0a0f14;border:1px solid var(--line-2);border-radius:10px;padding:9px 11px;overflow:auto;margin:0;white-space:pre}
   .proof2 .tree .dir{color:var(--green-2)} .proof2 .tree .hl{color:var(--text)}
   .proof2 .testsnip .c{color:var(--dim)} .proof2 .testsnip .k{color:#79b8ff} .proof2 .testsnip .ok{color:var(--green)}
@@ -483,6 +484,32 @@
         <div><h3>The SaaS Boilerplate</h3><span class="pin">Next.js + Supabase</span></div>
         <p class="fd">The whole app, built and proven — start on your product, not on plumbing. <strong>Pro</strong> adds billing (Paddle), an admin panel, and web push.</p>
         <a class="demolink" href="#demo"><span class="ok">✓</span> Tenant isolation, proven live — watch a cross-tenant leak get blocked <span class="arw">→</span></a>
+        <div class="proof2">
+          <pre class="tree"><span class="dir">src/app/</span>
+  <span class="dir">(app)/</span>     <span class="hl">notes · settings · billing</span>
+  <span class="dir">(auth)/</span>    login · signup · reset
+  <span class="dir">admin/</span>     platform admin panel
+  <span class="dir">api/</span>       notes · billing · webhooks · push
+<span class="dir">src/lib/</span>
+  <span class="dir">auth/</span>      <span class="hl">require-workspace · rls.test.ts</span>
+  <span class="dir">billing/</span>   paddle · <span class="hl">webhook</span> · plan
+  <span class="dir">admin/</span>     queries · suspend
+  <span class="dir">push/</span>      webpush · notify
+  <span class="dir">supabase/</span>  server · client · admin
+<span class="dir">supabase/migrations/</span>  8 numbered RLS SQL
+<span class="dir">e2e/</span>  Playwright specs</pre>
+          <pre class="testsnip"><span class="c">$ npm test</span>
+ <span class="ok">✓</span> lib/auth/rls.test.ts       <span class="c">isolation</span>
+ <span class="ok">✓</span> lib/auth/rls.meta.test.ts  <span class="c">every table has RLS</span>
+ <span class="ok">✓</span> lib/billing/webhook.test.ts <span class="c">signed</span>
+ <span class="ok">✓</span> lib/auth/csrf.test.ts
+ <span class="ok">✓</span> api/webhooks/paddle/route
+ <span class="c">…7 more files</span>
+
+ <span class="k">Test Files</span>  <span class="ok">11 passed</span> (11)
+      <span class="k">Tests</span>  <span class="ok">59 passed</span>
+ <span class="c">RLS isolation suite runs green on a local DB.</span></pre>
+        </div>
         <div class="whatyouget">
           <div class="wyg base">
             <h4>BASE — the foundation</h4>

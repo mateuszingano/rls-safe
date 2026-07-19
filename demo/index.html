@@ -44,7 +44,11 @@
   .btn-attack{background:var(--wax);color:#2a0f07} .btn-seal{background:var(--green);color:#03251c}
   .playrow{display:flex;align-items:center;gap:12px;margin-top:11px;flex-wrap:wrap}
   .btn-play{background:var(--green);color:#03251c;font-size:13.5px;padding:11px 20px;border-radius:10px}
+  .btn-play.btn-off{background:transparent;border:1px solid var(--wax);color:var(--wax-2);opacity:1}
   .playrow .live{margin-top:0}
+  .live.off{color:var(--wax-2);border-color:var(--wax)}
+  .live.off .dot{background:var(--wax);box-shadow:0 0 8px var(--wax);animation:none}
+  .verify.spotlight{border-top-color:var(--wax);box-shadow:0 0 0 1px var(--wax) inset;border-radius:11px;padding:11px 12px}
   .io{min-height:20px}
   .verdict{display:none;font-family:var(--mono);font-weight:700;font-size:12px;border-radius:9px;padding:9px 11px;line-height:1.4}
   .verdict.show{display:block}
@@ -66,11 +70,11 @@
 <body>
 <div class="wrap">
   <span class="kick">◆ LIVE DEMO · REAL POSTGRES · VERIFY IT YOURSELF</span>
-  <h1>Same request, same database. One policy <span class="leak">leaks.</span> One <span class="seal">blocks.</span></h1>
+  <h1>Same database, same tenant, same goal. One policy <span class="leak">leaks.</span> One <span class="seal">blocks.</span></h1>
   <p class="sub">You're <b>Acme</b>. <b>Globex</b> is another tenant with a confidential memo. Below are the <b>real RLS policies</b> and a <b>real HTTP request</b> sent as Acme — the raw response comes straight from a live Postgres. No mockups, no JavaScript theater.</p>
   <div class="playrow">
     <button class="btn btn-play" id="play-btn" disabled>▶ Play the demo</button>
-    <span class="live"><span class="dot"></span>signed in as Acme · live Supabase</span>
+    <span class="live" id="live-status"><span class="dot"></span>connecting to the live database…</span>
   </div>
 
   <div class="contrast">
@@ -128,13 +132,32 @@
   var GLOBEX_SECRET_ID='4ba6e87d-059b-4865-843d-222081f159dc';
   var token=null;
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  function status(txt,cls){var s=document.getElementById('live-status');s.innerHTML='<span class="dot"></span>'+txt;s.className='live'+(cls?' '+cls:'');}
+
+  function offline(){
+    // Honest failure: the free DB may be asleep. Don't fake "signed in", don't leave a dead button.
+    status('the live database is asleep right now — prove it yourself below ↓','off');
+    var b=document.getElementById('play-btn');
+    b.disabled=true; b.classList.add('btn-off');
+    b.textContent='Demo offline — run it on YOUR db: npx airlock-rls ↓';
+    var v=document.querySelector('.verify'); if(v) v.classList.add('spotlight');
+  }
+  function autoRun(){
+    var b=document.getElementById('play-btn'); b.textContent='▶ Replay';
+    run('demo_leaky_notes?select=title,body&tenant=eq.Globex', document.getElementById('leak-req'), document.getElementById('leak-res-wrap'), document.getElementById('leak-res'), document.getElementById('leak-verdict'), false);
+    run('notes?select=*&id=eq.'+GLOBEX_SECRET_ID, document.getElementById('seal-req'), document.getElementById('seal-res-wrap'), document.getElementById('seal-res'), document.getElementById('seal-verdict'), true);
+  }
 
   (async function(){
     try{
       var r=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:ANON,'Content-Type':'application/json'},body:JSON.stringify({email:'demo@shipsealed.dev',password:'demo1234'})});
       var j=await r.json(); token=j.access_token;
-      if(token){document.getElementById('play-btn').disabled=false;}
-    }catch(e){}
+      if(token){
+        status('signed in as Acme · live Supabase');
+        document.getElementById('play-btn').disabled=false;
+        autoRun(); // auto-play: the reward shows without a click
+      } else { offline(); }
+    }catch(e){ offline(); }
   })();
 
   function bearer(){return token?('Bearer '+token.slice(0,24)+'…'):'Bearer …';}
