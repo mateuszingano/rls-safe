@@ -301,7 +301,10 @@
   .kitsbox[open] summary::before{content:"▾ ";color:var(--green)}
   .kitsbox summary b{color:var(--green)}
   .kitsbox .pieces3{margin-top:12px}
-  .piece-note{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px}
+  .piece-note{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:2px}
+  .piece-note code,.kitsbox .combo code{font-family:var(--mono);color:var(--green);background:rgba(31,227,184,.1);padding:1px 6px;border-radius:5px}
+  .piece-note b{color:var(--green)}
+  .kitsbox .combo{color:var(--dim);margin-left:6px}
   /* The page used to end on an email form: whoever already decided had to
      scroll back up to find a buy button. */
   .already{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:12px}
@@ -632,7 +635,7 @@
            are for the minority who only want one, and three extra buy
            buttons in everyone else's way was costing the Pro sale. -->
       <details class="kitsbox">
-        <summary>Just need one piece? <b>Kit Auth + RLS</b> · <b>Test Kit</b> · <b>ui-kit</b> — from $4.99</summary>
+        <summary>Just need one piece? <b>Kit Auth + RLS</b> · <b>Test Kit</b> · <b>ui-kit</b> — from $4.99 <span class="combo">2+ = 10% off with <code>COMBO10</code></span></summary>
       <div class="pieces3">
         <div class="piece">
           <div class="pt"><span class="pn">Kit Auth + RLS</span><span class="pp">$39.99</span></div>
@@ -663,7 +666,7 @@
           <a class="pa buy" href="checkout/?plan=ui-kit" data-paddle-plan="ui-kit">Get it →</a>
         </div>
       </div>
-      <div class="piece-note">Each piece is a slice of the boilerplate, sold on its own. Same repo, same tests, same 14-day refund.</div>
+      <div class="piece-note">Taking two or more? Enter <code>COMBO10</code> at checkout for <b>10% off</b>. Each piece is a slice of the boilerplate, sold on its own: same repo, same tests, same 14-day refund.</div>
       </details>
 
       <!-- AIRLOCK MONITOR band — recurring, the long-term asset -->
