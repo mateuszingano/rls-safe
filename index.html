@@ -287,6 +287,22 @@
   .piece .pa.det{color:var(--green)}
   .piece .pa.buy{color:#03251c;background:var(--green);padding:3px 10px;border-radius:6px}
   .piece-note{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px}
+  /* Collapsed by default: answers "what's inside?" without costing grid height. */
+  .pdet{margin:0 0 8px}
+  .pdet summary{font-family:var(--mono);font-size:11px;color:var(--green);cursor:pointer;list-style:none}
+  .pdet summary::-webkit-details-marker{display:none}
+  .pdet summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
+  .pdet[open] summary::before{content:"▾ "}
+  .pdet ul{margin:7px 0 0;padding-left:14px}
+  .pdet li{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:4px}
+  .pdet code{font-family:var(--mono);font-size:10.5px;color:var(--green-2)}
+  .mbmail{margin-top:8px}
+  .mbmail summary{font-family:var(--mono);font-size:11.5px;color:var(--green);cursor:pointer;list-style:none}
+  .mbmail summary::-webkit-details-marker{display:none}
+  .mbmail summary::before{content:"▸ "} .mbmail[open] summary::before{content:"▾ "}
+  .mbmail pre{font-family:var(--mono);font-size:10.5px;line-height:1.5;color:var(--muted);background:#08110d;
+              border:1px solid var(--line-2);border-radius:9px;padding:9px 11px;margin:8px 0 0;
+              white-space:pre-wrap;word-break:break-word;overflow-x:auto}
   .monitor-band{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:center;border:1px solid var(--green-dim);border-radius:14px;padding:12px 22px;background:linear-gradient(180deg,rgba(31,227,184,.08),rgba(31,227,184,.02))}
   @media(max-width:760px){.monitor-band{grid-template-columns:1fr}}
   .mb-kick{font-family:var(--mono);font-size:11px;letter-spacing:.6px;color:var(--green)}
@@ -492,7 +508,7 @@
   <!-- PAID LINEUP -->
   <section id="paid" class="reveal">
     <h2 style="margin-bottom:8px">When you're ready to charge customers</h2>
-    <p class="lead" style="margin-bottom:10px">The paid line is the whole app, already built. <em>On sale now</em> — the founding price locks in when you buy.</p>
+    <p class="lead" style="margin-bottom:10px">The paid line is the whole app, already built. <em>One payment, yours forever</em> — no subscription, no seat renewals, no expiring licence.</p>
 
     <div class="paidstack">
       <!-- FLAGSHIP (full width) -->
@@ -575,9 +591,34 @@
 
       <!-- 3 PIECES side by side -->
       <div class="pieces3">
-        <a class="piece" href="#paid" data-paddle-plan="kit-auth-rls"><div class="pt"><span class="pn">Kit Auth + RLS</span><span class="pp">$39.99</span></div><p class="pd">the security layer + the suite that proves it</p><span class="pa buy">Get it →</span></a>
-        <a class="piece" href="#paid" data-paddle-plan="test-kit"><div class="pt"><span class="pn">Test Kit</span><span class="pp">$29.99</span></div><p class="pd">the full testing pyramid + RLS harness</p><span class="pa buy">Get it →</span></a>
-        <a class="piece" href="#paid" data-paddle-plan="ui-kit"><div class="pt"><span class="pn">ui-kit</span><span class="pp">$4.99</span></div><p class="pd">15 themeable React components</p><span class="pa buy">Get it →</span></a>
+        <div class="piece">
+          <div class="pt"><span class="pn">Kit Auth + RLS</span><span class="pp">$39.99</span></div>
+          <p class="pd">the security layer + the suite that proves it</p>
+          <details class="pdet"><summary>what's inside</summary><ul>
+            <li>login, signup, password reset + update</li>
+            <li>3 migrations: workspaces, notes, tightened grants</li>
+            <li>5 test files, incl. <code>rls.test.ts</code> (isolation) and <code>rls.meta.test.ts</code> (every table has a policy)</li>
+          </ul></details>
+          <a class="pa buy" href="#paid" data-paddle-plan="kit-auth-rls">Get it →</a>
+        </div>
+        <div class="piece">
+          <div class="pt"><span class="pn">Test Kit</span><span class="pp">$29.99</span></div>
+          <p class="pd">the full testing pyramid + RLS harness</p>
+          <details class="pdet"><summary>what's inside</summary><ul>
+            <li>7 test files, wired and passing</li>
+            <li>Playwright e2e + config; Vitest for units and components</li>
+            <li>the RLS harness: <code>rls.test.ts</code> + <code>rls.meta.test.ts</code></li>
+          </ul></details>
+          <a class="pa buy" href="#paid" data-paddle-plan="test-kit">Get it →</a>
+        </div>
+        <div class="piece">
+          <div class="pt"><span class="pn">ui-kit</span><span class="pp">$4.99</span></div>
+          <p class="pd">15 themeable React components</p>
+          <details class="pdet"><summary>see all 15</summary><ul>
+            <li>Alert · Avatar · Badge · Button · Card · Collapsible · EmptyState · Input · LegendRow · Modal · Skeleton · Spinner · StatCard · Switch · Tabs</li>
+          </ul></details>
+          <a class="pa buy" href="#paid" data-paddle-plan="ui-kit">Get it →</a>
+        </div>
       </div>
       <div class="piece-note">Each piece is a slice of the boilerplate, sold on its own. Same repo, same tests, same 14-day refund.</div>
 
@@ -587,6 +628,19 @@
           <span class="mb-kick">● LIVE WATCH · SUBSCRIPTION · YOUR LONG-TERM GUARD</span>
           <h3 class="mb-title">Airlock Monitor</h3>
           <p class="mb-pitch">CI catches leaks before they merge. <strong>Airlock Monitor catches the ones that drift into production afterward</strong> — it re-audits your live database around the clock and emails you the moment RLS drifts. The leak the gate can't see.</p>
+          <details class="mbmail"><summary>see the email it sends</summary>
+<pre>Subject: Airlock detected 2 NEW RLS exposure(s) in acme-prod
+
+Airlock detected 2 NEW RLS exposure(s) in acme-prod
+
+  • invoices — table in "public" has RLS DISABLED — every
+    row is exposed to the API roles
+  • notes — [SELECT] any authenticated user reads all rows
+    (cross-tenant) — USING(true)
+
+These rows are reachable with the anon key. Fix the migration
+or add an allow-rule for intentionally-public policies.</pre>
+          </details>
         </div>
         <div class="mb-right">
           <div class="mb-price"><b>$19.99</b><small>/mo</small></div>

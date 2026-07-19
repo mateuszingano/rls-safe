@@ -21,7 +21,7 @@
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;padding:118px 20px 20px}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;padding:118px 20px 6px}
   .wrap{max-width:1040px;margin:0 auto}
   a{color:var(--green);text-decoration:none}
   .kick{font-family:var(--mono);font-size:12px;letter-spacing:.6px;color:var(--green)}
@@ -34,22 +34,22 @@
   .live .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:p 1.4s infinite}
   @keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
 
-  .contrast{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .contrast{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
   @media(max-width:760px){.contrast{grid-template-columns:1fr}}
-  .card{border:1px solid var(--line);border-radius:14px;background:var(--panel-2);padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--panel-2);padding:13px 15px;display:flex;flex-direction:column;gap:7px}
   .card.leaky{border-color:#3a2620} .card.sealed{border-color:var(--green-dim)}
   .ctag{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.3px}
   .card.leaky .ctag{color:var(--red)} .card.sealed .ctag{color:var(--green)}
   .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.5px;color:var(--dim);text-transform:uppercase;margin-bottom:3px}
   .code{font-family:var(--mono);font-size:11px;line-height:1.55;background:#08110d;border:1px solid var(--line-2);border-radius:9px;padding:8px 10px;white-space:pre-wrap;word-break:break-all}
   .code .kw{color:var(--blue)} .code .str{color:var(--green-2)} .code .cmt{color:var(--dim)} .code .bad{color:var(--red)} .code .ok{color:var(--green)}
-  .code.policy{min-height:70px}
-  #leak-res,#seal-res{min-height:70px}
+  .code.policy{min-height:58px}
+  #leak-res,#seal-res{min-height:56px}
   .code.policy .fn{color:var(--amber)}
   .btn{font-family:var(--mono);font-size:12.5px;font-weight:600;padding:10px 14px;border-radius:9px;border:0;cursor:pointer;text-align:left}
   .btn:disabled{opacity:.5;cursor:default}
   .btn-attack{background:var(--wax);color:#2a0f07} .btn-seal{background:var(--green);color:#03251c}
-  .playrow{display:flex;align-items:center;gap:12px;margin-top:11px;flex-wrap:wrap}
+  .playrow{display:flex;align-items:center;gap:12px;margin-top:9px;flex-wrap:wrap}
   .btn-play{background:var(--green);color:#03251c;font-size:13.5px;padding:11px 20px;border-radius:10px}
   .btn-play.btn-off{background:transparent;border:1px solid var(--wax);color:var(--wax-2);opacity:1}
   .playrow .live{margin-top:0}
@@ -57,7 +57,7 @@
   .live.off .dot{background:var(--wax);box-shadow:0 0 8px var(--wax);animation:none}
   .verify.spotlight{border-top-color:var(--wax);box-shadow:0 0 0 1px var(--wax) inset;border-radius:11px;padding:11px 12px}
   .io{min-height:20px}
-  .verdict{display:none;font-family:var(--mono);font-weight:700;font-size:12px;border-radius:9px;padding:9px 11px;line-height:1.4}
+  .verdict{display:none;font-family:var(--mono);font-weight:700;font-size:12px;border-radius:9px;padding:8px 10px;line-height:1.38}
   .verdict.show{display:block}
   .verdict.leaked{background:rgba(255,107,90,.12);border:1px solid var(--red);color:var(--red)}
   .verdict.blocked{background:rgba(31,227,184,.1);border:1px solid var(--green-dim);color:var(--green-2)}
@@ -67,12 +67,14 @@
   .homelink:hover{text-decoration:underline}
   .btn-proof{background:transparent;border:1px solid var(--line-2);color:var(--muted);font-size:12px;padding:10px 14px;border-radius:10px}
   .btn-proof:not(:disabled):hover{border-color:var(--wax);color:var(--wax-2)}
-  .foot{margin-top:9px;color:var(--dim);font-family:var(--mono);font-size:12px}
+  .foot{margin-top:7px;color:var(--dim);font-family:var(--mono);font-size:12px}
   .foot a{font-weight:600}
-  .verify{margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
+  .verify{margin-top:8px;border-top:1px solid var(--line);padding-top:9px}
   .verify .vh{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-bottom:8px}
   .verify .vh b{color:var(--green)}
-  .vitem{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.5;border:1px solid var(--line);border-radius:9px;padding:8px 12px;margin-bottom:7px;background:var(--panel-2)}
+  .vlist{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  @media(max-width:700px){.vlist{grid-template-columns:1fr}}
+  .vitem{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.45;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:var(--panel-2)}
   .vitem:hover{border-color:var(--green-dim)}
   .vitem code{color:var(--green);background:rgba(31,227,184,.08);padding:1px 5px;border-radius:4px}
   .vitem b{color:var(--text)}
@@ -131,17 +133,17 @@
       </div>
       <div class="verdict" id="seal-verdict"></div>
       <div class="io" id="proof-wrap" style="display:none">
-        <div class="lbl">the same query — but signed in as Globex, who owns the row</div>
         <div class="code" id="proof-res"></div>
       </div>
-      <div class="verdict" id="proof-verdict"></div>
     </div>
   </div>
 
   <div class="verify">
-    <div class="vh">Don't trust this page — <b>prove it yourself, free.</b> The same isolation lives in our open-source tools:</div>
-    <a class="vitem" href="https://www.npmjs.com/package/airlock-rls" target="_blank" rel="noopener"><code>npx airlock-rls</code> → runs on <b>your own</b> database and fails the build on the exact <code>using (true)</code> footgun you just saw. MIT, on npm.</a>
-    <a class="vitem" href="https://github.com/mateuszingano/nextjs-supabase-starter" target="_blank" rel="noopener"><code>nextjs-supabase-starter</code> → the free template ships this isolation test. Clone it, run <code>npm run test:rls</code>, watch it pass against a real Postgres.</a>
+    <div class="vh">Don't trust this page — <b>prove it yourself, free:</b></div>
+    <div class="vlist">
+      <a class="vitem" href="https://www.npmjs.com/package/airlock-rls" target="_blank" rel="noopener"><code>npx airlock-rls</code> → fails your build on this exact <code>using (true)</code> footgun. MIT, on npm.</a>
+      <a class="vitem" href="https://github.com/mateuszingano/nextjs-supabase-starter" target="_blank" rel="noopener"><code>nextjs-supabase-starter</code> → free template, ships this test. <code>npm run test:rls</code>.</a>
+    </div>
     <div class="foot">The paid boilerplate is all of this — hardened, multi-tenant, complete. <a href="/#paid" target="_top">See the boilerplate →</a></div>
   </div>
 </div>
@@ -170,7 +172,6 @@
     var p=document.getElementById('proof-btn');
     p.disabled=false; p.textContent='“0 rows just means the table is empty” — prove me wrong →';
     document.getElementById('proof-wrap').style.display='none';
-    document.getElementById('proof-verdict').className='verdict';
     run('demo_leaky_notes?select=title,body&tenant=eq.Globex', document.getElementById('leak-req'), document.getElementById('leak-res-wrap'), document.getElementById('leak-res'), document.getElementById('leak-verdict'), false);
     run('notes?select=*&id=eq.'+GLOBEX_SECRET_ID, document.getElementById('seal-req'), document.getElementById('seal-res-wrap'), document.getElementById('seal-res'), document.getElementById('seal-verdict'), true);
   }
@@ -224,16 +225,19 @@
       var ms=Math.round(performance.now()-t0);
       var body=await r.text();
       var rows; try{rows=JSON.parse(body);}catch(_){rows=[];}
+      // Compact on purpose: the full URL is already printed in the card above,
+      // so repeating the whole dump would only cost height inside the iframe.
+      var title=(rows[0]&&(rows[0].title||rows[0].body))||'';
       document.getElementById('proof-wrap').style.display='';
       document.getElementById('proof-res').innerHTML=
-        '<span class="ok">GET</span> '+esc(url)+'\n'+
-        '<span class="cmt">authorization:</span> Bearer '+gtok.slice(0,18)+'…  <span class="cmt">← Globex, not Acme</span>\n\n'+
-        '<span class="cmt">HTTP</span> <span class="ok">'+r.status+'</span> <span class="cmt">· '+ms+'ms · rows: '+rows.length+'</span>\n'+
-        '<span class="bad">'+esc(body)+'</span>';
-      var v=document.getElementById('proof-verdict');
+        '<span class="cmt">same URL ·</span> authorization: Bearer '+gtok.slice(0,14)+'… <span class="cmt">← Globex, not Acme</span>\n'+
+        '<span class="cmt">HTTP</span> <span class="ok">'+r.status+'</span> <span class="cmt">· '+ms+'ms · rows: '+rows.length+'</span>  <span class="bad">'+esc(String(title).slice(0,58))+'</span>';
+      // Evolve the sealed verdict instead of stacking a second box: same story,
+      // one place to read it, and it keeps the demo inside one screen.
+      var v=document.getElementById('seal-verdict');
       v.className='verdict proof show';
       v.innerHTML=rows.length
-        ? '◆ The row was there the whole time. Same URL, same database — only the tenant changed. Acme got 0 rows because the policy said no, not because the table was empty.'
+        ? '◆ 0 rows to Acme, <b>1 row to Globex</b> — from the same URL. The row was there all along: the policy said no, the table was never empty.'
         : '◆ Globex got 0 rows too — the demo row is missing, so ignore this run.';
       btn.textContent='✓ proven — the row exists';
     }catch(e){
