@@ -218,6 +218,14 @@
   .flag2 .demolink:hover{background:rgba(31,227,184,.1)}
   .flag2 .demolink .ok{color:var(--green)} .flag2 .demolink .arw{margin-left:2px}
   .flag2 .feats{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0 0}
+  .whatyouget{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0 0;font-family:var(--mono);font-size:12px}
+  @media(max-width:600px){.whatyouget{grid-template-columns:1fr}}
+  .wyg h4{font-size:11px;letter-spacing:.4px;color:var(--green);margin-bottom:6px;font-weight:700}
+  .wyg.pro h4{color:var(--green-2)}
+  .wyg ul{list-style:none;margin:0;padding:0}
+  .wyg li{color:var(--muted);padding-left:16px;position:relative;margin-bottom:4px;line-height:1.4}
+  .wyg li::before{content:"✓";position:absolute;left:0;color:var(--green-dim)}
+  .wyg.pro li::before{color:var(--green)}
   .flag2 .feats span{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:7px;padding:3px 8px}
   .seatfoot{margin-top:auto;padding-top:12px}
   .seatrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
@@ -245,7 +253,7 @@
   .it2 .det{color:var(--green)}
   .combo2{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:auto;padding-top:10px}
   /* vertical paid stack: flagship / 3 pieces / monitor band */
-  .paidstack{display:flex;flex-direction:column;gap:12px}
+  .paidstack{display:flex;flex-direction:column;gap:7px}
   .seatfoot-row{display:flex;align-items:center;justify-content:space-between;gap:14px 20px;flex-wrap:wrap;margin-top:auto;padding-top:12px}
   .seatfoot-row .seatrow{margin-bottom:0}
   .seatfoot-row .prices{margin-bottom:0}
@@ -261,7 +269,7 @@
   .piece .pa.det{color:var(--green)}
   .piece .pa.buy{color:#03251c;background:var(--green);padding:3px 10px;border-radius:6px}
   .piece-note{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px}
-  .monitor-band{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:center;border:1px solid var(--green-dim);border-radius:14px;padding:16px 22px;background:linear-gradient(180deg,rgba(31,227,184,.08),rgba(31,227,184,.02))}
+  .monitor-band{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:center;border:1px solid var(--green-dim);border-radius:14px;padding:12px 22px;background:linear-gradient(180deg,rgba(31,227,184,.08),rgba(31,227,184,.02))}
   @media(max-width:760px){.monitor-band{grid-template-columns:1fr}}
   .mb-kick{font-family:var(--mono);font-size:11px;letter-spacing:.6px;color:var(--green)}
   .mb-title{font-family:var(--mono);font-size:21px;letter-spacing:-.4px;margin:4px 0 5px}
@@ -372,7 +380,7 @@
     <p class="mantra">So you ship <span class="hl-mint">sealed.</span></p>
     <div class="cta-row">
       <a class="btn btn-primary" href="#tools">Get the free tools →</a>
-      <a class="btn btn-ghost" href="pricing/">See pricing →</a>
+      <a class="btn btn-ghost" href="#paid">See pricing →</a>
     </div>
     <div class="micro">6 tools live on npm &amp; GitHub &middot; MIT &middot; no signup to start</div>
     </div>
@@ -467,11 +475,6 @@
   <section id="paid" class="reveal">
     <h2 style="margin-bottom:8px">When you're ready to charge customers</h2>
     <p class="lead" style="margin-bottom:10px">The paid line is the whole app, already built. <em>On sale now</em> — the founding price locks in when you buy.</p>
-    <div class="trust">
-      <span><b>Runs in your CI</b> — nothing leaves your repo</span><span class="s">·</span>
-      <span><b>6 tools</b> free on npm · MIT</span><span class="s">·</span>
-      <span><b>Proven by tests</b> on a real Postgres</span>
-    </div>
 
     <div class="paidstack">
       <!-- FLAGSHIP (full width) -->
@@ -480,7 +483,27 @@
         <div><h3>The SaaS Boilerplate</h3><span class="pin">Next.js + Supabase</span></div>
         <p class="fd">The whole app, built and proven — start on your product, not on plumbing. <strong>Pro</strong> adds billing (Paddle), an admin panel, and web push.</p>
         <a class="demolink" href="#demo"><span class="ok">✓</span> Tenant isolation, proven live — watch a cross-tenant leak get blocked <span class="arw">→</span></a>
-        <div class="feats"><span>multi-tenant</span><span>billing (Paddle)</span><span>admin panel</span><span>web push</span><span>RLS isolation suite</span><span>e2e + CI</span></div>
+        <div class="whatyouget">
+          <div class="wyg base">
+            <h4>BASE — the foundation</h4>
+            <ul>
+              <li>Multi-tenant workspaces + auth</li>
+              <li>Full RLS isolation suite, proven by tests</li>
+              <li>Member invites</li>
+              <li>Unit + e2e tests, CI, deploy config</li>
+              <li>Complete source, yours to modify</li>
+            </ul>
+          </div>
+          <div class="wyg pro">
+            <h4>PRO — everything in Base, plus</h4>
+            <ul>
+              <li>Billing (Paddle): subscriptions + one-time</li>
+              <li>Admin panel — metrics, suspend tenants</li>
+              <li>Web push + in-app notifications</li>
+              <li>ui-kit (15 React components) included</li>
+            </ul>
+          </div>
+        </div>
         <div class="seatfoot-row">
           <div class="seatrow" id="phseats">
             <button class="seat-btn active" data-i="0" type="button">1 dev</button>
@@ -494,18 +517,17 @@
             <span class="ptier">Pro <b id="pp">$179.99</b> <span class="tag">MOST POPULAR</span></span>
           </div>
           <div class="btns">
-            <a class="btn btn-ghost" href="pricing/" data-paddle-plan="base">Get Base →</a>
-            <a class="btn btn-primary" href="pricing/" data-paddle-plan="pro">Get Pro →</a>
-            <a class="lnk" href="pricing/">compare →</a>
+            <a class="btn btn-ghost" href="#paid" data-paddle-plan="base">Get Base →</a>
+            <a class="btn btn-primary" href="#paid" data-paddle-plan="pro">Get Pro →</a>
           </div>
         </div>
       </div>
 
       <!-- 3 PIECES side by side -->
       <div class="pieces3">
-        <a class="piece" href="pricing/"><div class="pt"><span class="pn">Kit Auth + RLS</span><span class="pp">$39.99</span></div><p class="pd">the security layer + the suite that proves it</p><span class="pa det">Details →</span></a>
-        <a class="piece" href="pricing/"><div class="pt"><span class="pn">Test Kit</span><span class="pp">$29.99</span></div><p class="pd">the full testing pyramid + RLS harness</p><span class="pa det">Details →</span></a>
-        <a class="piece" href="pricing/" data-paddle-plan="ui-kit"><div class="pt"><span class="pn">ui-kit</span><span class="pp">$4.99</span></div><p class="pd">15 themeable React components</p><span class="pa buy">Buy now</span></a>
+        <a class="piece" href="#paid" data-paddle-plan="kit-auth-rls"><div class="pt"><span class="pn">Kit Auth + RLS</span><span class="pp">$39.99</span></div><p class="pd">the security layer + the suite that proves it</p><span class="pa buy">Get it →</span></a>
+        <a class="piece" href="#paid" data-paddle-plan="test-kit"><div class="pt"><span class="pn">Test Kit</span><span class="pp">$29.99</span></div><p class="pd">the full testing pyramid + RLS harness</p><span class="pa buy">Get it →</span></a>
+        <a class="piece" href="#paid" data-paddle-plan="ui-kit"><div class="pt"><span class="pn">ui-kit</span><span class="pp">$4.99</span></div><p class="pd">15 themeable React components</p><span class="pa buy">Get it →</span></a>
       </div>
       <div class="piece-note">Take 2 or more pieces and save 10%.</div>
 
@@ -518,7 +540,7 @@
         </div>
         <div class="mb-right">
           <div class="mb-price"><b>$19.99</b><small>/mo</small></div>
-          <a class="btn btn-primary" href="pricing/" data-paddle-plan="monitor">Start monitoring →</a>
+          <a class="btn btn-primary" href="#paid" data-paddle-plan="monitor">Start monitoring →</a>
           <span class="mb-note">No account needed — subscribe, we email your login link.</span>
         </div>
       </div>
@@ -548,7 +570,7 @@
 
   <footer style="flex-direction:column;align-items:flex-start;gap:9px">
     <div style="display:flex;gap:20px;flex-wrap:wrap">
-      <a href="pricing/">Pricing</a>
+      <a href="#paid">Pricing</a>
       <a href="terms/">Terms</a>
       <a href="privacy/">Privacy</a>
       <a href="refunds/">Refunds</a>
