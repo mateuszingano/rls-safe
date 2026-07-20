@@ -28,7 +28,7 @@
   html.embedded, html.embedded body{height:100%;overflow:auto}
   html.embedded body{padding-left:0;padding-right:0}
   html.embedded .wrap{max-width:none}
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;padding:88px 20px 2px}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;padding:133px 20px 2px}
   .wrap{max-width:1040px;margin:0 auto}
   a{color:var(--green);text-decoration:none}
   .kick{font-family:var(--mono);font-size:12px;letter-spacing:.6px;color:var(--green)}
@@ -64,7 +64,7 @@
   .btn{font-family:var(--mono);font-size:12.5px;font-weight:600;padding:10px 14px;border-radius:9px;border:0;cursor:pointer;text-align:left}
   .btn:disabled{opacity:.5;cursor:default}
   .btn-attack{background:var(--wax);color:#2a0f07} .btn-seal{background:var(--green);color:#03251c}
-  .playrow{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+  .playrow{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
   .btn-play{background:var(--green);color:#03251c;font-size:13.5px;padding:6px 20px;border-radius:10px}
   .btn-play.btn-off{background:transparent;border:1px solid var(--wax);color:var(--wax-2);opacity:1}
   /* Mesma altura dos botões (30) e colada na direita: o texto muda de estado
@@ -101,7 +101,10 @@
   .btn-proof:not(:disabled):hover{background:rgba(233,96,62,.1);color:var(--wax-2)}
   .foot{margin-top:7px;color:var(--dim);font-family:var(--mono);font-size:12px}
   .foot a{font-weight:600}
-  .verify{margin-top:3px;border-top:1px solid var(--line);padding-top:5px}
+  /* borda transparente, nao removida: a linha cinza abaixo dos cards saiu, mas
+     o espaco de 1px continua reservado — assim o bloco nao pula quando o
+     .spotlight acende a mesma borda em laranja. */
+  .verify{margin-top:3px;border-top:1px solid transparent;padding-top:5px}
   .verify .vh{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-bottom:6px}
   .vitem{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:5px}
   /* O link do card selado ia como ANON — abria [] e nao provava isolamento.

@@ -84,7 +84,7 @@
   nav.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
   /* hero */
-  .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-start;padding:150px 0 32px;border-bottom:1px solid var(--line)}
+  .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-start;padding:190px 0 32px;border-bottom:1px solid var(--line)}
   .pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--green);
         border:1px solid var(--green-dim);background:rgba(31,227,184,.07);padding:6px 13px;border-radius:999px;margin-bottom:28px}
   .pill .live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);
@@ -178,7 +178,7 @@
 
 
   .tools-h{margin-top:40px;scroll-margin-top:80px}
-  .who-tools{padding:110px 0 14px;justify-content:flex-start}
+  .who-tools{padding:150px 0 14px;justify-content:flex-start}
   .who-tools h2{margin-bottom:8px}
   .who-tools .cmp{gap:10px}
   .who-tools .card{padding:11px 16px}
@@ -195,8 +195,13 @@
   .who-tools .tool .cmd{margin-top:7px}
   /* The selling section carries the most: flagship + proof + 3 pieces + Monitor.
      It gets TWO slots of the grid, so it still starts and ends on a multiple. */
-  #paid{justify-content:flex-start;padding-top:75px;padding-bottom:25px}
-  #monitor{justify-content:flex-start;padding-top:80px;padding-bottom:39px}
+  /* O #paid tem duas ancoras: o topo flui do padding-top, mas o .seatfoot tem
+     margin-top:auto e fica colado no FIM — quem move a parte de baixo e o
+     padding-bottom. Pra subir o bloco inteiro, mexe nos dois. */
+  #paid{justify-content:flex-start;padding-top:105px;padding-bottom:65px}
+  /* o card desce sozinho, sem levar o titulo da secao junto */
+  #paid .flag2{margin-top:10px}
+  #monitor{justify-content:flex-start;padding-top:120px;padding-bottom:84px}
   #paid .lead{max-width:820px}
 
  #paid .trust .s{color:var(--dim)}
@@ -217,14 +222,30 @@
   .flag2 .demolink:hover{background:rgba(31,227,184,.1)}
   .flag2 .demolink .ok{color:var(--green)} .flag2 .demolink .arw{margin-left:2px}
   .flag2 .feats{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0 0}
-  .whatyouget{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0 0;font-family:var(--mono);font-size:12px}
+  /* margem zero: o seletor de team size logo acima ja tem margin-bottom, e os
+     12px daqui eram o que fazia o #paid estourar os 993 depois que BASE/PRO
+     viraram cards (o padding dos cards nao cabia na folga). */
+  .whatyouget{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0;font-family:var(--mono);font-size:12px}
   @media(max-width:600px){.whatyouget{grid-template-columns:1fr}}
+  /* Cada tier e UM card: features + botao + preco juntos. Coluna flex pro
+     rodape colar no fim (margin-top:auto) e os dois cards alinharem o CTA
+     mesmo com as listas tendo alturas diferentes. */
+  .wyg{display:flex;flex-direction:column;
+    border:1px solid var(--line);border-radius:12px;background:var(--panel-2);
+    padding:10px 13px;transition:border-color .15s,background .15s}
+  .wyg:hover{border-color:var(--green);background:var(--panel)}
+  .tc-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    margin-top:auto;padding-top:6px}
   .wyg h4{font-size:11px;letter-spacing:.4px;color:var(--green);margin-bottom:6px;font-weight:700}
   .wyg.pro h4{color:var(--green-2)}
   .wyg ul{list-style:none;margin:0;padding:0}
-  .wyg li{color:var(--muted);padding-left:16px;position:relative;margin-bottom:4px;line-height:1.4}
-  .wyg li::before{content:"✓";position:absolute;left:0;color:var(--green-dim)}
-  .wyg.pro li::before{color:var(--green)}
+  .wyg li{color:var(--muted);padding-left:16px;position:relative;margin-bottom:1px;line-height:1.4}
+  /* mesmo verde nos dois lados: o Base usava --green-dim e ficava mais apagado
+     que o Pro, dava impressao de peso diferente entre os tiers */
+  .wyg li::before{content:"✓";position:absolute;left:0;color:var(--green)}
+  /* o brinde do Monitor troca o check pelo presente. font-size menor pra o
+     emoji nao empurrar a linha (a secao esta sem folga). */
+  .wyg li.gift::before{content:"🎁";font-size:10px;line-height:1.4;top:0}
   .flag2 .feats span{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:7px;padding:3px 8px}
   .seatfoot{margin-top:auto;padding-top:12px}
   .seatrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
@@ -270,6 +291,25 @@
   .seatfoot-row{display:flex;align-items:center;justify-content:space-between;gap:14px 20px;flex-wrap:wrap;margin-top:auto;padding-top:12px}
   .seatfoot-row .seatrow{margin-bottom:0}
   .seatfoot-row .prices{margin-bottom:0}
+  /* Seat selector em cima (vale pros dois tiers) + um card por produto. */
+  .seatfoot{margin-top:auto;padding-top:12px}
+  /* O seletor e um CABECALHO dos dois tiers: centralizado e por cima dos dois.
+     Encostado a esquerda ele parecia pertencer so ao Base. */
+  .seatpick{display:flex;flex-direction:column;align-items:center;gap:7px;margin:2px 0 12px}
+  .seatlabel{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text);text-align:center}
+  /* grid de 5 colunas iguais: toda pilula com a MESMA largura.
+     Escopado em .seatpick (nao em .seatfoot) — o bloco vive acima das colunas. */
+  .seatpick .seatrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
+    width:100%;max-width:520px;margin:0}
+  .seatpick .seat-btn{text-align:center;padding:5px 4px}
+  .tiercards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* botao a esquerda, preco a direita */
+  .tiercard{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:10px 13px}
+  /* os dois botoes sao iguais — nenhum tier chama mais atencao que o outro */
+  .tiercard .tc-buy{font-size:14px;padding:9px 16px;border-radius:9px}
+  .tc-price{font-family:var(--mono);font-size:20px;letter-spacing:-.02em;color:var(--green)}
+  @media(max-width:760px){.tiercards{grid-template-columns:1fr}}
   .pieces3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   @media(max-width:760px){.pieces3{grid-template-columns:1fr}}
   .piece{border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:10px 13px;text-decoration:none;display:flex;flex-direction:column;transition:border-color .15s,background .15s}
@@ -277,9 +317,13 @@
   .piece:hover{border-color:var(--green);background:linear-gradient(180deg,rgba(31,227,184,.07),rgba(31,227,184,.02))}
   .piece .pt{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
   .piece .pn{font-family:var(--mono);font-size:14px;color:var(--text)}
-  .piece .pp{font-family:var(--mono);font-size:13.5px;color:var(--green)}
+  .piece .pp{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--green)}
   .piece .pd{color:var(--dim);font-size:12px;margin:5px 0 9px;line-height:1.45;flex:1}
-  .piece .pa{font-family:var(--mono);font-size:11.5px;align-self:flex-start}
+  .piece .pa{font-family:var(--mono);font-size:14px;align-self:flex-start}
+  /* preco desceu pra linha do "Get it →": a setinha ja aponta pra ele.
+     Botao a esquerda, preco a direita, colado no fim do card. */
+  .piece .pfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+  .piece .pfoot .pa{align-self:auto}
   .piece .pa.det{color:var(--green)}
   .piece .pa.buy{color:#03251c;background:var(--green);padding:3px 10px;border-radius:6px;font-weight:600}
   /* The floor sits underneath; the iframe covers it on desktop. Below 760px the
@@ -298,11 +342,16 @@
   .treebox summary::before{content:"▸ "}
   .treebox[open] summary::before{content:"▾ "}
   .treebox code{color:var(--green-2)}
-  .kitsrow{border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:9px 13px}
-  .kitshead{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  /* padding-bottom menor: com a borda de 1px, 4+1 da os 5px que o botao do
+     combo precisa ate o fim do card. */
+  .kitsrow{border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:9px 13px 4px}
+  .kitshead{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:8px}
 
   .kitsrow .pieces3{margin-top:0}
-  .piece-note{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:2px}
+  /* centralizada, e o respiro e medido pelo BOTAO (ele e o elemento mais alto
+     da linha, entao e ele que encosta nos cards): 5px pro bloco de kits acima
+     e 5px pra borda do .kitsrow abaixo. */
+  .piece-note{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:5px;text-align:center}
   .piece-note code,.kitsrow .combo code{font-family:var(--mono);color:var(--green);background:rgba(31,227,184,.1);padding:1px 6px;border-radius:5px}
   .piece-note b{color:var(--green)}
   /* o combo precisava de um BOTAO: antes o preco mais atraente da secao
@@ -368,7 +417,7 @@
   .mb-surf code{font-family:var(--mono);color:var(--green-2);font-size:10.5px}
   .mb-first{font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.45;margin-top:8px;max-width:660px}
   .mb-first b{color:var(--green)}
-  #list{justify-content:flex-start;padding-top:170px}
+  #list{justify-content:flex-start;padding-top:220px}
   .menu{border:1px solid var(--line);border-radius:var(--radius);padding:4px 24px 22px;background:var(--panel-2)}
   .menu .fam{display:flex;align-items:baseline;gap:10px;margin:14px 0 0;padding-top:11px;border-top:1px solid var(--line)}
   .menu .fam:first-of-type{border-top:0;padding-top:4px}
@@ -570,7 +619,10 @@
         <a class="btn btn-primary" href="demo/">Run the live demo →</a>
       </div>
     </div>
-    <iframe data-src="demo/" loading="lazy" title="Live isolation demo — watch RLS block a cross-tenant leak"></iframe>
+    <!-- caminho explicito ate o index: "demo/" so resolve num servidor; abrindo
+         o site por file:// o navegador mostra a LISTAGEM da pasta dentro do
+         iframe. Com o arquivo nomeado funciona nos dois. -->
+    <iframe data-src="demo/index.html" loading="lazy" title="Live isolation demo — watch RLS block a cross-tenant leak"></iframe>
   </section>
 
   <!-- PAID LINEUP -->
@@ -614,6 +666,26 @@
  <span class="c">RLS isolation suite runs green on a local DB.</span></pre>
           </div>
         </details>
+        <!-- O seat selector e o CABECALHO dos dois tiers: fica acima das duas
+             colunas, centralizado, pra valer visivelmente para os dois.
+             Ganchos do checkout inalterados: #phseats + .seat-btn[data-i]
+             (paddle.js le o .active pra escolher o priceId). -->
+        <div class="seatpick">
+          <span class="seatlabel">Team size</span>
+          <div class="seatrow" id="phseats">
+            <button class="seat-btn active" data-i="0" type="button">1 dev</button>
+            <button class="seat-btn" data-i="1" type="button">2 devs</button>
+            <button class="seat-btn" data-i="2" type="button">3 devs</button>
+            <button class="seat-btn" data-i="3" type="button">4 devs</button>
+            <button class="seat-btn" data-i="4" type="button">5–8 devs</button>
+          </div>
+        </div>
+        <!-- Um card por tier: features + botao + preco no MESMO card, porque
+             sao o mesmo produto. O rodape (botao/preco) fica colado no fim de
+             cada card (margin-top:auto), entao os dois alinham mesmo com as
+             listas tendo alturas diferentes.
+             Ganchos do checkout intactos: #pb / #pp sao reescritos pelo script
+             a cada troca de team size; data-paddle-plan e lido pelo paddle.js. -->
         <div class="whatyouget">
           <div class="wyg base">
             <h4>BASE — the foundation</h4>
@@ -623,7 +695,13 @@
               <li>Member invites</li>
               <li>Unit + e2e tests, CI, deploy config</li>
               <li>Complete source, yours to modify</li>
+              <li class="gift">ui-kit (15 React components) free</li>
+              <li class="gift">Airlock Monitor — 1 month free</li>
             </ul>
+            <div class="tc-foot">
+              <a class="btn btn-primary tc-buy" href="checkout/?plan=base" data-paddle-plan="base">Get Base →</a>
+              <b class="tc-price" id="pb">$119.99</b>
+            </div>
           </div>
           <div class="wyg pro">
             <h4>PRO — everything in Base, plus</h4>
@@ -631,25 +709,13 @@
               <li>Billing: Paddle checkout, signature-verified webhook, customer portal, plan gate</li>
               <li><code>/admin</code>: workspace + user counts, active subscriptions, suspend a tenant</li>
               <li>Web push (VAPID) + an in-app notification inbox</li>
-              <li>ui-kit (15 React components) included</li>
+              <li class="gift">ui-kit (15 React components) free</li>
+              <li class="gift">Airlock Monitor — 3 months free</li>
             </ul>
-          </div>
-        </div>
-        <div class="seatfoot-row">
-          <div class="seatrow" id="phseats">
-            <button class="seat-btn active" data-i="0" type="button">1 dev</button>
-            <button class="seat-btn" data-i="1" type="button">2 devs</button>
-            <button class="seat-btn" data-i="2" type="button">3 devs</button>
-            <button class="seat-btn" data-i="3" type="button">4 devs</button>
-            <button class="seat-btn" data-i="4" type="button">5–8 devs</button>
-          </div>
-          <div class="prices">
-            <span class="ptier">Base <b id="pb">$119.99</b></span>
-            <span class="ptier">Pro <b id="pp">$179.99</b></span>
-          </div>
-          <div class="btns">
-            <a class="btn btn-ghost" href="checkout/?plan=base" data-paddle-plan="base">Get Base →</a>
-            <a class="btn btn-primary" href="checkout/?plan=pro" data-paddle-plan="pro">Get Pro →</a>
+            <div class="tc-foot">
+              <a class="btn btn-primary tc-buy" href="checkout/?plan=pro" data-paddle-plan="pro">Get Pro →</a>
+              <b class="tc-price" id="pp">$179.99</b>
+            </div>
           </div>
         </div>
         <div class="buyband">
@@ -657,7 +723,7 @@
           <p><span class="bl">DELIVERY</span> Read access to the private GitHub repo. Enter your GitHub username on the receipt page and the invite lands in your inbox — clone and go. <span class="s">Seats = invites; the licence covers unlimited projects you own or build for clients.</span></p>
           <p><span class="bl">UPDATES</span> Repo access doesn't expire. Every future update lands in the same repository you already have. <span class="s">No renewal, no upgrade fee.</span></p>
           <p><span class="bl">REFUND</span> 14 days, money back, no hard feelings. <a href="refunds/">Read the policy</a>.</p>
-          <p class="bhelp">Checkout blocked by an adblocker or a corporate proxy? Email <a href="mailto:support@shipsealed.com?subject=Direct%20checkout%20link">support@shipsealed.com</a> and I'll send a direct link. Mateus answers.</p>
+          <p class="bhelp">Checkout blocked by an adblocker or a corporate proxy? Email <a href="mailto:support@shipsealed.com?subject=Direct%20checkout%20link">support@shipsealed.com</a> and you'll get a direct link.</p>
         </div>
       </div>
 
@@ -722,29 +788,38 @@ or add an allow-rule for intentionally-public policies.</pre>
         <div class="kitshead">Just need one piece?</div>
       <div class="pieces3">
         <div class="piece">
-          <div class="pt"><span class="pn">Kit Auth + RLS</span><span class="pp">$39.99</span></div>
+          <div class="pt"><span class="pn">Kit Auth + RLS</span></div>
           <ul class="plist">
             <li>login, signup, password reset + update</li>
             <li>3 migrations: workspaces, notes, tightened grants</li>
             <li>5 test files, incl. <code>rls.test.ts</code> (isolation) and <code>rls.meta.test.ts</code> (every table has a policy)</li>
           </ul>
-          <a class="pa buy" href="checkout/?plan=kit-auth-rls" data-paddle-plan="kit-auth-rls">Get it →</a>
+          <div class="pfoot">
+            <a class="pa buy" href="checkout/?plan=kit-auth-rls" data-paddle-plan="kit-auth-rls">Get it →</a>
+            <span class="pp">$39.99</span>
+          </div>
         </div>
         <div class="piece">
-          <div class="pt"><span class="pn">Test Kit</span><span class="pp">$29.99</span></div>
+          <div class="pt"><span class="pn">Test Kit</span></div>
           <ul class="plist">
             <li>7 test files, wired and passing</li>
             <li>Playwright e2e + config; Vitest for units and components</li>
             <li>the RLS harness: <code>rls.test.ts</code> + <code>rls.meta.test.ts</code></li>
           </ul>
-          <a class="pa buy" href="checkout/?plan=test-kit" data-paddle-plan="test-kit">Get it →</a>
+          <div class="pfoot">
+            <a class="pa buy" href="checkout/?plan=test-kit" data-paddle-plan="test-kit">Get it →</a>
+            <span class="pp">$29.99</span>
+          </div>
         </div>
         <div class="piece">
-          <div class="pt"><span class="pn">UI Kit</span><span class="pp">$4.99</span></div>
+          <div class="pt"><span class="pn">UI Kit</span></div>
           <ul class="plist">
             <li>Alert · Avatar · Badge · Button · Card · Collapsible · EmptyState · Input · LegendRow · Modal · Skeleton · Spinner · StatCard · Switch · Tabs</li>
           </ul>
-          <a class="pa buy" href="checkout/?plan=ui-kit" data-paddle-plan="ui-kit">Get it →</a>
+          <div class="pfoot">
+            <a class="pa buy" href="checkout/?plan=ui-kit" data-paddle-plan="ui-kit">Get it →</a>
+            <span class="pp">$4.99</span>
+          </div>
         </div>
       </div>
       <div class="piece-note">Every piece is cut from the boilerplate itself: same repo, same tests. <a class="combobtn" href="checkout/?plan=combo" data-paddle-plan="combo">Get all three — <b>$67.47</b> (COMBO10 applied)</a></div>
@@ -781,8 +856,8 @@ or add an allow-rule for intentionally-public policies.</pre>
           <h3>The SaaS Boilerplate</h3>
           <p>Auth, RLS and the tests that prove isolation, already built.</p>
           <div class="clbuy">
-            <span class="clp"><i>from</i> <b id="ppEnd">$179.99</b></span>
             <a class="btn btn-primary" href="checkout/?plan=pro" data-paddle-plan="pro">Get Pro →</a>
+            <span class="clp"><i>from</i> <b id="ppEnd">$179.99</b></span>
           </div>
         </div>
         <div class="cl">
@@ -790,8 +865,8 @@ or add an allow-rule for intentionally-public policies.</pre>
           <h3>Airlock Monitor</h3>
           <p>Re-audits your live database every morning and emails you the moment something opens.</p>
           <div class="clbuy">
-            <span class="clp">$19.99<small>/mo</small></span>
             <a class="btn btn-primary" href="checkout/?plan=monitor" data-paddle-plan="monitor">Start watching →</a>
+            <span class="clp">$19.99<small>/mo</small></span>
           </div>
         </div>
       </div>
@@ -961,5 +1036,310 @@ or add an allow-rule for intentionally-public policies.</pre>
   })();
 </script>
 <script src="assets/paddle.js"></script>
+
+<!-- ===================== DEV GRID (regua de 900) =====================
+     Ferramenta de trabalho, nao faz parte do site. Fica INERTE ate ser
+     ligada: acesse com ?dev na URL (ou aperte G). Nao toca no layout —
+     e um overlay absoluto com pointer-events:none.
+     A grade e de 900 limpos landando em 0. A nav flutua por cima e faz
+     parte do primeiro slot; nao existe banda de 62. Ver CLAUDE.md.
+=================================================================== -->
+<script>
+(function(){
+  // O slot NAO e 900. O site e desenhado em telas cheias: 1 secao = 1 tela
+  // (100svh). Numa janela de 993 o slot e 993; numa de 900 e 900. Cobrar 900
+  // fixo pinta de erro um site que esta certo — foi o que aconteceu aqui.
+  // A referencia e sempre a altura da propria janela.
+  var CANON = 0;     // = svh() da janela atual (a "tela cheia")
+  var SLOT  = 0;
+  var on = /[?&]dev\b/.test(location.search) || location.hash === '#dev';
+  var root = null;
+
+  // As secoes sao min-height:100svh — elas seguem a ALTURA DA JANELA, nao 900px.
+  // Entao a regua tem que medir a mesma unidade, senao as divisorias divergem e
+  // o erro ACUMULA (o slot 6 erra 6x a diferenca). Mede 100svh de verdade.
+  function svh(){
+    var p = document.createElement('div');
+    p.style.cssText = 'position:absolute;top:-9999px;left:0;width:1px;height:100svh;pointer-events:none';
+    document.body.appendChild(p);
+    var h = p.getBoundingClientRect().height || window.innerHeight;
+    p.remove();
+    return Math.round(h);
+  }
+
+  function css(){
+    if(document.getElementById('devgrid-css')) return;
+    var s = document.createElement('style');
+    s.id = 'devgrid-css';
+    s.textContent = [
+      '#devgrid{position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:9999;font:11px/1 ui-monospace,SFMono-Regular,Menlo,monospace}',
+      '#devgrid .dg-rail{position:absolute;top:0;left:0;width:64px;height:100%;background:linear-gradient(90deg,rgba(7,8,10,.82),rgba(7,8,10,.35));border-right:1px solid rgba(31,227,184,.35)}',
+      '#devgrid .dg-tick{position:absolute;left:0;width:10px;border-top:1px solid rgba(138,149,160,.35)}',
+      '#devgrid .dg-tick.mid{width:18px;border-top-color:rgba(138,149,160,.55)}',
+      '#devgrid .dg-slot{position:absolute;left:0;width:100%;border-top:1px solid rgba(31,227,184,.55)}',
+      '#devgrid .dg-slot.first{border-top-style:dashed}',
+      '#devgrid .dg-num{position:absolute;left:6px;color:#1fe3b8;letter-spacing:.04em;transform:translateY(3px)}',
+      '#devgrid .dg-sub{position:absolute;left:22px;color:#5b636e;transform:translateY(3px)}',
+      '#devgrid .dg-band{position:absolute;left:64px;right:0;background:rgba(31,227,184,.028)}',
+      '#devgrid .dg-band.odd{background:rgba(233,96,62,.028)}',
+      '#devgrid .dg-name{position:absolute;right:10px;color:#8a95a0;letter-spacing:.08em;text-transform:uppercase;transform:translateY(8px)}',
+      '#devgrid .dg-slot.off{border-top-color:rgba(233,96,62,.75)}',
+      '#devgrid .dg-name.off{color:#e9603e}',
+      '#devgrid .dg-name b{color:#e9603e;font-weight:600}',
+      // a linha do IDEAL (multiplo de 900). Coincide com a real numa janela de 900.
+      '#devgrid .dg-canon{position:absolute;left:64px;right:0;border-top:1px dotted rgba(138,149,160,.45)}',
+      '#devgrid .dg-canon span{position:absolute;left:8px;top:-13px;color:#5b636e;background:rgba(7,8,10,.8);padding:1px 4px;border-radius:3px}',
+      // crosshair: o cursor vira regua
+      '#devcross{position:fixed;inset:0;z-index:10001;pointer-events:none;font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}',
+      '#devcross .dc-h{position:absolute;left:0;right:0;border-top:1px solid rgba(31,227,184,.85)}',
+      '#devcross .dc-v{position:absolute;top:0;bottom:0;border-left:1px solid rgba(31,227,184,.45)}',
+      '#devcross .dc-tag{position:absolute;background:rgba(7,8,10,.94);border:1px solid #20242a;border-radius:6px;padding:5px 7px;color:#e7ecef;white-space:nowrap}',
+      '#devcross .dc-tag b{color:#1fe3b8;font-weight:600}',
+      '#devcross .dc-tag i{color:#5b636e;font-style:normal}',
+      // ancora (tecla M): mede a distancia entre dois pontos
+      '#devcross .dc-a{position:absolute;left:0;right:0;border-top:1px dashed #e9603e}',
+      '#devcross .dc-fill{position:absolute;left:0;right:0;background:rgba(233,96,62,.10);border-left:2px solid #e9603e}',
+      '#devcross .dc-d{position:absolute;left:50%;transform:translateX(-50%);background:#e9603e;color:#07080a;font-weight:700;padding:2px 7px;border-radius:5px}',
+      '#devhud{position:fixed;top:10px;right:10px;z-index:10000;background:rgba(7,8,10,.92);border:1px solid #20242a;border-radius:8px;padding:9px 11px;color:#e7ecef;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:none;min-width:190px}',
+      '#devhud b{color:#1fe3b8;font-weight:600}',
+      '#devhud .warn{color:#e9603e}',
+      '#devhud .k{color:#5b636e}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  // As secoes NAO sao filhas diretas do body (vivem dentro do .wrap) — um
+  // seletor 'body > section' nao acha nada e reporta "tudo ok" sem ter medido
+  // coisa alguma. Ja me enganou uma vez. Mede sempre por aqui.
+  function medir(){
+    var out = [];
+    var els = document.querySelectorAll('.hero, section, footer');
+    for(var i=0;i<els.length;i++){
+      var el = els[i];
+      if(el.closest('#devgrid')) continue;
+      if(getComputedStyle(el).position === 'fixed') continue; // a nav flutua
+      var r = el.getBoundingClientRect();
+      out.push({
+        el: el,
+        id: el.id || (el.className.toString().split(' ')[0]) || el.tagName.toLowerCase(),
+        top: Math.round(r.top + window.pageYOffset),
+        h: Math.round(r.height)
+      });
+    }
+    return out;
+  }
+
+  function build(){
+    SLOT = CANON = svh();   // 1 secao = 1 tela cheia. A tela e a referencia.
+    var doc = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    var secs = medir();
+    var h = '<div class="dg-rail"></div>';
+
+    // ---- camada 1: o IDEAL. Multiplos do slot canonico de 900, pontilhado.
+    // Quando a janela tem 900 de altura estas linhas coincidem com as reais.
+    for(var i=0;i*CANON<doc;i++){
+      h += '<div class="dg-canon" style="top:'+(i*CANON)+'px"><span>'+(i*CANON)+'</span></div>';
+    }
+
+    // ---- camada 2: o REAL. Uma banda por secao, no topo e altura medidos.
+    // E isto que voce ve na tela; a linha verde nunca mente.
+    for(var k=0;k<secs.length;k++){
+      var s = secs[k];
+      // O footer nao e um slot proprio: ele fecha o ULTIMO slot junto com o
+      // #list (ex.: list 898 + footer 95 = 993). Entao o que se cobra dele e a
+      // SOMA com o vizinho de cima, nao a altura sozinho.
+      var par = s.el.matches('footer');
+      var ant = k>0 ? secs[k-1] : null;
+      var d = par && ant ? (ant.h + s.h) - CANON   // o par fecha a tela?
+                         : s.h - CANON;            // a secao e uma tela cheia?
+      // o #list sozinho fica curto de proposito (o footer completa) — nao e erro
+      var parDeCima = (k+1 < secs.length) && secs[k+1].el.matches('footer');
+      if(parDeCima) d = (s.h + secs[k+1].h) - CANON;
+      var ok = Math.abs(d) <= 1;
+      h += '<div class="dg-band'+(k%2?' odd':'')+'" style="top:'+s.top+'px;height:'+s.h+'px"></div>';
+      h += '<div class="dg-slot'+(ok?'':' off')+(k===0?' first':'')+'" style="top:'+s.top+'px"></div>';
+      h += '<div class="dg-num" style="top:'+s.top+'px">'+s.top+'</div>';
+      h += '<div class="dg-name'+(ok?'':' off')+'" style="top:'+s.top+'px">'+s.id+' &middot; '+s.h+
+           (par||parDeCima ? ' <span class="k">+par</span>' : '')+
+           (ok?' ok':' <b>'+(d>0?'+':'')+d+'</b>')+'</div>';
+      // ticks de 100 dentro da secao + o meio dela
+      for(var t=100;t<s.h;t+=100){
+        h += '<div class="dg-tick" style="top:'+(s.top+t)+'px"></div>';
+      }
+      var mid = Math.round(s.h/2);
+      h += '<div class="dg-tick mid" style="top:'+(s.top+mid)+'px"></div>';
+      h += '<div class="dg-sub" style="top:'+(s.top+mid)+'px">'+mid+'</div>';
+    }
+
+    root.style.height = doc+'px';
+    root.innerHTML = h;
+  }
+
+  function hud(){
+    var el = document.getElementById('devhud');
+    if(!el) return;
+    var y = window.pageYOffset;
+    var doc = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    var secs = medir();
+
+    // em qual secao o scroll esta agora (pela medida real, nao por divisao)
+    var cur = secs[0] || {id:'-',top:0,h:1};
+    for(var i=0;i<secs.length;i++){ if(y+1 >= secs[i].top) cur = secs[i]; }
+    // desvio de cada secao em relacao a UMA TELA CHEIA (a sua tela), somando
+    // o footer com o #list porque os dois juntos e que fecham a ultima tela.
+    var fora = [];
+    for(var j=0;j<secs.length;j++){
+      var s = secs[j];
+      if(s.el.matches('footer')) continue;                 // contabilizado no par
+      var alt = s.h;
+      if(j+1 < secs.length && secs[j+1].el.matches('footer')) alt += secs[j+1].h;
+      var dd = alt - CANON;
+      if(Math.abs(dd) > 1) fora.push(s.id+' '+(dd>0?'+':'')+dd);
+    }
+
+    el.innerHTML =
+      '<div><b>DEV GRID</b> <span class="k">1 secao = 1 tela</span></div>'+
+      '<div class="k">sua tela (o master)</div>'+
+      '<div><b>'+window.innerWidth+' x '+window.innerHeight+'</b>  <span class="k">tela cheia</span> '+CANON+'</div>'+
+      '<div class="k">secao atual</div><div><b>'+cur.id+'</b> '+cur.h+'px '+
+        '<span class="k">+</span>'+Math.round(y-cur.top)+'</div>'+
+      '<div class="k">fora da tela cheia</div>'+
+      '<div'+(fora.length?' class="warn"':'')+'>'+(fora.length ? fora.join(', ') : 'nenhuma &mdash; uniforme')+'</div>'+
+      '<div class="k">documento</div><div>'+doc+'  <span class="k">=</span> '+(doc/CANON).toFixed(2)+' telas</div>'+
+      '<div class="k" style="margin-top:5px">G liga/desliga &middot; M marca &middot; ESC solta</div>';
+  }
+
+  // ---------------- o cursor como regua ----------------
+  // Da a medida em px E em % da tela cheia. O % e o que interessa pra
+  // replicar a composicao em outro tamanho de tela; o px so vale aqui.
+  var cross = null, mx = -1, my = -1, anchor = null; // anchor = Y no documento
+
+  function pct(v){ return CANON ? (v/CANON*100).toFixed(1)+'%' : '-'; }
+
+  function drawCross(){
+    if(!cross || my < 0) return;
+    var yDoc = Math.round(my + window.pageYOffset);
+    var secs = medir();
+    var cur = secs[0] || {id:'-',top:0,h:1};
+    for(var i=0;i<secs.length;i++){ if(yDoc+1 >= secs[i].top) cur = secs[i]; }
+    var dentro = yDoc - cur.top;          // quanto ja andou dentro da secao
+    var falta  = cur.top + cur.h - yDoc;  // quanto falta pro fim dela
+
+    var h = '';
+    h += '<div class="dc-v" style="left:'+mx+'px"></div>';
+    h += '<div class="dc-h" style="top:'+my+'px"></div>';
+
+    // etiqueta perto do cursor, sempre dentro da tela
+    var lx = Math.min(mx + 14, window.innerWidth - 250);
+    var ly = Math.min(my + 14, window.innerHeight - 76);
+    h += '<div class="dc-tag" style="left:'+lx+'px;top:'+ly+'px">'+
+         '<div><b>'+cur.id+'</b> <i>+</i>'+dentro+' <i>('+pct(dentro)+' da tela)</i></div>'+
+         '<div><i>falta</i> '+falta+' <i>&middot; doc</i> '+yDoc+'</div>'+
+         '<div><i>x</i> '+mx+' <i>de</i> '+window.innerWidth+'</div>'+
+         '</div>';
+
+    // com a ancora posta (tecla M), mede a distancia entre os dois pontos
+    if(anchor !== null){
+      var ay = anchor - window.pageYOffset;   // ancora em coordenada de tela
+      var d  = Math.abs(yDoc - anchor);
+      var t0 = Math.min(ay, my);
+      h += '<div class="dc-a" style="top:'+ay+'px"></div>';
+      h += '<div class="dc-fill" style="top:'+t0+'px;height:'+Math.abs(my-ay)+'px"></div>';
+      h += '<div class="dc-d" style="top:'+(t0 + Math.abs(my-ay)/2 - 9)+'px">'+d+'px &middot; '+pct(d)+'</div>';
+    }
+    cross.innerHTML = h;
+  }
+
+  var raf = 0;
+  function redraw(){
+    if(!root) return;
+    if(raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(function(){ raf = 0; build(); hud(); });
+  }
+
+  function mount(){
+    css();
+    root = document.createElement('div'); root.id = 'devgrid';
+    var h = document.createElement('div'); h.id = 'devhud';
+    cross = document.createElement('div'); cross.id = 'devcross';
+    document.body.appendChild(root); document.body.appendChild(h); document.body.appendChild(cross);
+    build(); hud();
+    document.addEventListener('mousemove', onMove, {passive:true});
+    window.addEventListener('scroll', onScroll, {passive:true});
+    hookFrames();
+    window.addEventListener('resize', redraw);
+    // o evento resize nem sempre chega (pane de preview, zoom, fontes tardias),
+    // entao observa a altura do documento tambem — senao a regua congela nos
+    // valores da primeira medicao e passa a mentir.
+    if(window.ResizeObserver){
+      var ro = new ResizeObserver(redraw);
+      ro.observe(document.body);
+      root._ro = ro;
+    }
+  }
+  function onMove(e){ mx = e.clientX; my = e.clientY; drawCross(); }
+  function onScroll(){ hud(); drawCross(); }   // rolando, o Y do doc muda sob o cursor
+
+  // O #demo e um IFRAME. Com o ponteiro/foco dentro dele, mousemove e keydown
+  // vao para o documento DE DENTRO e nunca chegam aqui — a regua congela e as
+  // teclas param. Entao a ferramenta se engancha no iframe tambem.
+  // (Mesma origem: o iframe e do proprio site.)
+  function hookFrames(){
+    var frames = document.querySelectorAll('iframe');
+    for(var i=0;i<frames.length;i++){
+      (function(ifr){
+        function hook(){
+          var d;
+          try { d = ifr.contentDocument; } catch(err){ return; }  // outra origem: ignora
+          if(!d || d._devHooked) return;
+          d._devHooked = true;
+          d.addEventListener('mousemove', function(e){
+            var r = ifr.getBoundingClientRect();      // converte pra coordenada da pagina
+            mx = Math.round(r.left + e.clientX);
+            my = Math.round(r.top  + e.clientY);
+            drawCross();
+          }, {passive:true});
+          d.addEventListener('keydown', onKey);
+        }
+        hook();
+        ifr.addEventListener('load', hook);
+      })(frames[i]);
+    }
+  }
+
+  function unmount(){
+    var a = document.getElementById('devgrid'), b = document.getElementById('devhud'),
+        c = document.getElementById('devcross');
+    if(a && a._ro) a._ro.disconnect();
+    document.removeEventListener('mousemove', onMove);
+    window.removeEventListener('scroll', onScroll);
+    if(a) a.remove(); if(b) b.remove(); if(c) c.remove();
+    root = null; cross = null; anchor = null; my = -1;
+  }
+
+  function onKey(e){
+    var t = e.target.tagName;
+    if(t === 'INPUT' || t === 'TEXTAREA' || e.metaKey || e.ctrlKey) return;
+    var k = (e.key || '').toLowerCase();
+
+    if(k === 'g'){ on = !on; on ? mount() : unmount(); return; }
+    if(!on) return;
+
+    // M marca/solta a ancora na altura do cursor. De proposito NAO uso clique:
+    // o clique e dos links do site, a ferramenta nao pode roubar.
+    if(k === 'm' && my >= 0){
+      anchor = (anchor === null) ? Math.round(my + window.pageYOffset) : null;
+      drawCross();
+    }
+    if(e.key === 'Escape'){ anchor = null; drawCross(); }
+  }
+  document.addEventListener('keydown', onKey);
+
+  if(on){
+    if(document.readyState === 'complete') mount();
+    else window.addEventListener('load', mount);
+  }
+})();
+</script>
 </body>
 </html>
